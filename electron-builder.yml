@@ -1,0 +1,19 @@
+appId: at.mfreimueller.wheeloffortune
+productName: Wheel of Fortune
+directories:
+  buildResources: assets
+  output: release
+icon: assets/icon.png
+files:
+  - out/**/*
+  - package.json
+mac:
+  category: public.app-category.education
+  target:
+    - dmg
+  # Unsigned build for local use; there is no Apple developer identity configured.
+  identity: null
+linux:
+  category: Education
+  target:
+    - AppImage
