@@ -47,17 +47,12 @@ async function reveal(): Promise<void> {
 
 <style scoped>
 .path {
-  padding: 6px 8px;
-  background: #f3f4f6;
-  border-radius: 6px;
-  font-family: ui-monospace, monospace;
+  padding: var(--space-2);
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-sm);
   font-size: 13px;
+  line-height: 18px;
   word-break: break-all;
-}
-
-.hint {
-  font-size: 13px;
-  color: #6b7280;
 }
 
 .row {

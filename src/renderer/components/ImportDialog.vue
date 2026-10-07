@@ -5,10 +5,10 @@
 
       <p v-if="state.kind === 'working'">{{ t('import.working') }}</p>
 
-      <form v-else-if="state.kind === 'school-year'" @submit.prevent="submitYear">
+      <form v-else-if="state.kind === 'school-year'" class="stack" @submit.prevent="submitYear">
         <p>{{ t('import.schoolYearPrompt') }}</p>
-        <label>
-          {{ t('import.schoolYearLabel') }}
+        <label class="field">
+          <span class="caption">{{ t('import.schoolYearLabel') }}</span>
           <input v-model="yearInput" data-testid="school-year-input" :placeholder="t('import.schoolYearHint')" autofocus />
         </label>
         <div class="actions">
@@ -17,9 +17,9 @@
         </div>
       </form>
 
-      <div v-else-if="state.kind === 'done'" data-testid="import-report">
+      <div v-else-if="state.kind === 'done'" class="stack" data-testid="import-report">
         <p>{{ state.report.courseCreated ? t('import.courseCreated') : t('import.courseUpdated') }}</p>
-        <ul>
+        <ul class="bullets">
           <li>{{ t('import.added', { n: state.report.added }) }}</li>
           <li>{{ t('import.updated', { n: state.report.updated }) }}</li>
           <li>{{ t('import.reactivated', { n: state.report.reactivated }) }}</li>
@@ -27,7 +27,7 @@
         </ul>
         <template v-if="state.report.warnings.length">
           <h3>{{ t('import.warnings') }}</h3>
-          <ul>
+          <ul class="bullets small">
             <li v-for="(w, i) in state.report.warnings" :key="i">
               {{ t(`import.warning.${w.code}`, { row: w.row ?? '', detail: w.detail ?? '' }) }}
             </li>
@@ -38,7 +38,7 @@
         </div>
       </div>
 
-      <div v-else>
+      <div v-else class="stack">
         <p class="error" role="alert">{{ state.message }}</p>
         <div class="actions">
           <button class="primary" @click="emit('close')">{{ t('import.close') }}</button>
@@ -102,3 +102,29 @@ function submitYear(): void {
   void run(yearInput.value);
 }
 </script>
+
+<style scoped>
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.field input {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.bullets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bullets li::before {
+  content: '•\00a0\00a0';
+}
+</style>

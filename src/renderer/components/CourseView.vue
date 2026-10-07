@@ -32,6 +32,7 @@
     <PickResultDialog
       v-if="result"
       :student="result"
+      :color="resultColor"
       :course-id="course.id"
       :categories="course.categories"
       :default-category="course.defaultCategory"
@@ -47,7 +48,7 @@
     <SpecialDialog v-if="special" :special="special" @close="special = null" />
 
     <div v-if="confirmingReset" class="overlay" @click.self="confirmingReset = false">
-      <div class="dialog" role="dialog" aria-modal="true" :aria-label="t('wheel.reset')">
+      <div class="dialog" style="--dialog-width: 400px" role="dialog" aria-modal="true" :aria-label="t('wheel.reset')">
         <p>{{ t('wheel.resetConfirm') }}</p>
         <div class="actions">
           <button @click="confirmingReset = false">{{ t('import.cancel') }}</button>
@@ -66,7 +67,7 @@ import type { CourseFile } from '../../core/schemas';
 import type { StudentPatch } from '../../core/studentPatch';
 import type { Special } from '../../core/types';
 import type { PickedStudent } from '../../shared/types';
-import { layoutItems } from '../utils/wheelGeometry';
+import { computeSegments, layoutItems } from '../utils/wheelGeometry';
 import SpecialsEditor from './SpecialsEditor.vue';
 import StudentTable from './StudentTable.vue';
 import PickResultDialog from './PickResultDialog.vue';
@@ -85,6 +86,8 @@ const fair = ref(true);
 const picking = ref(false);
 const error = ref('');
 const result = ref<PickedStudent | null>(null);
+// The wheel color of the student in `result`, captured before the pick changes the wheel.
+const resultColor = ref<string | null>(null);
 const special = ref<Special | null>(null);
 const wheel = ref<InstanceType<typeof StudentWheel> | null>(null);
 const confirmingReset = ref(false);
@@ -100,6 +103,12 @@ const items = computed(() => {
   return layoutItems(pool, activeSpecials(props.course.specials, fair.value));
 });
 
+function showResult(picked: PickedStudent | null): void {
+  const colors = new Map(computeSegments(items.value).map((s) => [s.id, s.color]));
+  resultColor.value = picked ? (colors.get(picked.studentId) ?? null) : null;
+  result.value = picked;
+}
+
 async function spin(): Promise<void> {
   await run(async () => {
     const outcome = await window.wheel.pick.draw({ courseId: props.course.id, fair: fair.value, absentIds: [...absentIds.value] });
@@ -113,9 +122,10 @@ async function spin(): Promise<void> {
       await wheel.value?.spinTo(target, index === 0 ? FIRST_SPIN_MS : AGAIN_SPIN_MS);
     }
     const last = outcome.spins.at(-1);
-    emit('changed');
+    // Look at the wheel as it was spun, before the pick is reloaded and the fair pool shrinks.
     if (last?.kind === 'special') special.value = last.special;
-    else result.value = outcome.picked;
+    else showResult(outcome.picked);
+    emit('changed');
   });
 }
 
@@ -126,8 +136,8 @@ async function pickDirect(studentId: string): Promise<void> {
       error.value = t(`wheel.errors.${outcome.error}`);
       return;
     }
+    showResult(outcome.picked);
     emit('changed');
-    result.value = outcome.picked;
   });
 }
 
@@ -166,22 +176,30 @@ async function run(action: () => Promise<void>): Promise<void> {
 </script>
 
 <style scoped>
+.course {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
 .controls {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 8px;
+  gap: var(--space-3);
 }
 
-.hint {
-  color: #6b7280;
-  font-size: 13px;
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
+/* The wheel frame of the design is 524 px wide, the student table 560 px. */
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content;
-  gap: 24px;
+  grid-template-columns: minmax(0, 524px) max-content;
+  gap: var(--space-6);
   align-items: start;
 }
 </style>

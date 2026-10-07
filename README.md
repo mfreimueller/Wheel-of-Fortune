@@ -10,6 +10,10 @@ loosely coupled. The only connection between the two apps is two CSV files; all 
 - **Grade** the picked student with `+` `~` `−` in the result dialog.
 - **Export** the graded picks as CSV for Grader's assessment import.
 
+Design: the UI follows the [Figma file](https://www.figma.com/design/EFNvJC53TQSNlIXsCpvkdD) (Foundations, Components, Screens).
+Its variables are mirrored in `src/renderer/styles/tokens.css`; the base components (button, select, checkbox, radio,
+dialog) live in `src/renderer/style.css`. The design uses Inter as a stand-in for the macOS system font the app renders with.
+
 Formats: [docs/formats.md](docs/formats.md). Full specification: [docs/SPEC.md](docs/SPEC.md).
 
 ## Data

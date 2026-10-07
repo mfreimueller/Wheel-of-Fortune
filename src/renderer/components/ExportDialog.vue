@@ -1,11 +1,11 @@
 <template>
   <div class="overlay">
-    <div class="dialog" role="dialog" aria-modal="true" :aria-label="t('export.title')">
+    <div class="dialog" style="--dialog-width: 460px" role="dialog" aria-modal="true" :aria-label="t('export.title')">
       <h2>{{ t('export.title') }}</h2>
       <p v-if="loading">{{ t('import.working') }}</p>
       <p v-else-if="error" class="error" role="alert">{{ error }}</p>
 
-      <form v-else-if="!done" @submit.prevent="run">
+      <form v-else-if="!done" class="stack" @submit.prevent="run">
         <p class="course">{{ courseName }}</p>
         <label class="option">
           <input v-model="scope" type="radio" value="new" :disabled="newCount === 0" data-testid="scope-new">
@@ -24,7 +24,7 @@
         </div>
       </form>
 
-      <div v-else data-testid="export-report">
+      <div v-else class="stack" data-testid="export-report">
         <p>{{ t('export.done', { n: done.count }) }}</p>
         <p class="path">{{ done.filePath }}</p>
         <template v-if="done.warnings.length">
@@ -88,18 +88,19 @@ async function run(): Promise<void> {
 
 <style scoped>
 .course {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .option {
-  display: block;
-  margin: 6px 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
-.hint,
 .path {
   font-size: 13px;
-  color: #6b7280;
+  line-height: 18px;
+  color: var(--color-text-secondary);
   word-break: break-all;
 }
 </style>

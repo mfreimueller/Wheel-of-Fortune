@@ -1,6 +1,6 @@
 <template>
   <div class="overlay" @click.self="emit('close')">
-    <div class="dialog" role="dialog" aria-modal="true" :aria-label="special.label">
+    <div class="dialog" style="--dialog-width: 400px" role="dialog" aria-modal="true" :aria-label="special.label">
       <h2 data-testid="special-label">{{ special.label }}</h2>
       <p v-if="special.message">{{ special.message }}</p>
       <div class="actions">

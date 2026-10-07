@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="table-wrap">
     <table class="students" data-testid="students">
       <thead>
         <tr>
@@ -14,26 +14,26 @@
         <tr v-for="s in active" :key="s.id" :data-student="s.id" :class="{ absent: absentIds.has(s.id) }">
           <td>
             <div class="color">
-            <input
-              type="color"
-              :value="s.color ?? '#9ca3af'"
-              :aria-label="t('table.colorFor', { name: fullName(s) })"
-              :data-testid="`color-${s.id}`"
-              @change="emit('update', s.id, { color: ($event.target as HTMLInputElement).value })"
-            >
-            <button
-              v-if="s.color"
-              type="button"
-              class="clear"
-              :title="t('table.clearColor')"
-              :aria-label="t('table.clearColor')"
-              @click="emit('update', s.id, { color: null })"
-            >
-              ×
-            </button>
+              <input
+                type="color"
+                :value="s.color ?? '#9ca3af'"
+                :aria-label="t('table.colorFor', { name: fullName(s) })"
+                :data-testid="`color-${s.id}`"
+                @change="emit('update', s.id, { color: ($event.target as HTMLInputElement).value })"
+              >
+              <button
+                v-if="s.color"
+                type="button"
+                class="clear"
+                :title="t('table.clearColor')"
+                :aria-label="t('table.clearColor')"
+                @click="emit('update', s.id, { color: null })"
+              >
+                ×
+              </button>
             </div>
           </td>
-          <td>{{ s.lastName }} {{ s.firstName }}</td>
+          <td class="name">{{ s.lastName }} {{ s.firstName }}</td>
           <td>
             <input
               class="count"
@@ -100,59 +100,84 @@ const fullName = (s: Student): string => `${s.lastName} ${s.firstName}`;
 </script>
 
 <style scoped>
+.table-wrap {
+  min-width: 560px;
+}
+
 .students {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
 }
 
-.students th,
-.students td {
-  padding: 4px 6px;
-  border-bottom: 1px solid var(--border);
+/* Table header: Caption text style */
+.students th {
+  padding: 0 6px 6px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
   text-align: left;
   white-space: nowrap;
 }
 
-tr.absent td {
-  color: #9ca3af;
-  text-decoration: line-through;
+/* Student row: 40 px, 6 px padding, 12 px between the cells */
+.students td {
+  height: 40px;
+  padding: 0 6px;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
 }
 
-tr.absent td:last-child,
-tr.absent td:nth-child(4) {
-  text-decoration: none;
+.name {
+  min-width: 130px;
+}
+
+/* A block-level checkbox centers on the row instead of sitting on the text baseline. */
+.students input[type='checkbox'] {
+  display: block;
+}
+
+/* Only the name is struck through for a student who is absent today. */
+tr.absent .name {
+  color: var(--color-disabled);
+  text-decoration: line-through;
 }
 
 .color {
   display: flex;
   align-items: center;
-  gap: 4px;
-}
-
-.color input {
-  width: 28px;
-  height: 24px;
-  padding: 0;
-  border: 1px solid var(--border);
-  background: none;
+  gap: var(--space-1);
 }
 
 .clear {
   padding: 0 6px;
+  line-height: 22px;
 }
 
 .count {
   width: 56px;
+  height: 26px;
+  padding: 0 0 0 6px;
+  border-color: var(--color-text);
+  border-radius: 3px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.count::-webkit-inner-spin-button,
+.count::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
 }
 
 .inactive {
-  margin-top: 12px;
-  font-size: 14px;
+  margin-top: var(--space-3);
+  font-size: 13px;
+  line-height: 18px;
 }
 
-.hint {
-  color: #6b7280;
-  font-size: 13px;
+.inactive li {
+  margin-top: var(--space-1);
 }
 </style>

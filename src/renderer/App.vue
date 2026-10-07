@@ -48,7 +48,7 @@
   </main>
 
   <div v-if="deleting && course" class="overlay" @click.self="deleting = false">
-    <div class="dialog" role="dialog" aria-modal="true" :aria-label="t('header.delete')">
+    <div class="dialog" style="--dialog-width: 400px" role="dialog" aria-modal="true" :aria-label="t('header.delete')">
       <p>{{ t('header.deleteConfirm', { name: `${course.className} · ${course.subject}` }) }}</p>
       <div class="actions">
         <button @click="deleting = false">{{ t('import.cancel') }}</button>
@@ -112,11 +112,15 @@ onMounted(() => refresh());
 <style scoped>
 .menu {
   position: relative;
-  font-size: 14px;
 }
 
 .menu summary {
+  list-style: none;
   cursor: pointer;
+}
+
+.menu summary::-webkit-details-marker {
+  display: none;
 }
 
 .menu-items {
@@ -128,12 +132,9 @@ onMounted(() => refresh());
   min-width: 160px;
   margin-top: 4px;
   padding: 6px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: #fff;
-}
-
-.check {
-  font-size: 13px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-dialog);
 }
 </style>

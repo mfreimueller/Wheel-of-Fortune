@@ -1,6 +1,6 @@
 <template>
   <div class="overlay">
-    <div class="dialog editor" role="dialog" aria-modal="true" :aria-label="t('specials.title')">
+    <div class="dialog" style="--dialog-width: 720px" role="dialog" aria-modal="true" :aria-label="t('specials.title')">
       <h2>{{ t('specials.title') }}</h2>
       <p class="hint">{{ t('specials.intro') }}</p>
 
@@ -35,7 +35,7 @@
 
       <button type="button" data-testid="special-add" @click="add">{{ t('specials.add') }}</button>
 
-      <p class="share" data-testid="specials-share">{{ t('specials.share', { n: Math.max(0, 100 - total).toFixed(1) }) }}</p>
+      <p class="small" data-testid="specials-share">{{ t('specials.share', { n: Math.max(0, 100 - total).toFixed(1) }) }}</p>
       <p v-if="problem" class="error" role="alert" data-testid="specials-error">{{ problem }}</p>
 
       <div class="actions">
@@ -105,13 +105,11 @@ async function save(): Promise<void> {
 </script>
 
 <style scoped>
-.editor {
-  width: 720px;
-  max-width: 92vw;
-}
-
 .rows {
-  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -121,28 +119,31 @@ async function save(): Promise<void> {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  margin-bottom: 8px;
 }
 
 .label {
-  flex: 1;
-  min-width: 160px;
+  flex: none;
+  width: 200px;
+}
+
+.prob {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 18px;
 }
 
 .prob input {
-  width: 64px;
+  width: 56px;
 }
 
 .message {
   flex-basis: 100%;
+  height: 56px;
 }
 
-.hint {
-  font-size: 13px;
-  color: #6b7280;
-}
-
-.share {
-  font-size: 13px;
+.dialog > button {
+  align-self: flex-start;
 }
 </style>

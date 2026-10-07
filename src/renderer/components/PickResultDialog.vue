@@ -1,11 +1,11 @@
 <template>
   <div class="overlay" @click.self="emit('close')">
-    <div class="dialog result" role="dialog" aria-modal="true" :aria-label="t('result.selected', { name: fullName })">
-      <div class="avatar" :style="{ background: student.color ?? 'var(--primary)' }">{{ initials }}</div>
+    <div class="dialog result" style="--dialog-width: 400px" role="dialog" aria-modal="true" :aria-label="t('result.selected', { name: fullName })">
+      <div class="avatar" :style="{ background: avatarColor, color: avatarText }">{{ initials }}</div>
       <h2 data-testid="result-name">{{ fullName }}</h2>
-      <p data-testid="result-count">{{ t('result.count', { n: student.pickCount }) }}</p>
+      <p class="count" data-testid="result-count">{{ t('result.count', { n: student.pickCount }) }}</p>
 
-      <label class="label" for="grade-category">{{ t('result.gradeOptional') }}</label>
+      <label class="caption" for="grade-category">{{ t('result.gradeOptional') }}</label>
       <select v-if="categories.length" id="grade-category" v-model="category" data-testid="grade-category" :disabled="saving" @change="changeCategory">
         <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
       </select>
@@ -16,7 +16,7 @@
           v-for="s in SYMBOLS"
           :key="s.value"
           type="button"
-          :class="['symbol', { active: selected === s.value }]"
+          :class="['symbol', { primary: selected === s.value }]"
           :disabled="saving"
           :aria-pressed="selected === s.value"
           :aria-label="t(`result.symbol.${s.value}`)"
@@ -27,8 +27,8 @@
           {{ s.glyph }}
         </button>
       </div>
-      <p class="hint">{{ t('result.undoHint') }}</p>
-      <p v-if="saved" class="status" data-testid="grade-saved">{{ t('result.saved') }}</p>
+      <p class="caption">{{ t('result.undoHint') }}</p>
+      <p v-if="saved" class="success" data-testid="grade-saved">{{ t('result.saved') }}</p>
       <p v-if="error" class="error" role="alert">{{ error }}</p>
 
       <div class="actions">
@@ -43,9 +43,12 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { GradeSymbol } from '../../core/assessments';
 import type { PickedStudent } from '../../shared/types';
+import { labelColor } from '../utils/wheelGeometry';
 
 const props = defineProps<{
   student: PickedStudent;
+  /** The color of the student's wheel segment, so the avatar matches what was just on the wheel. */
+  color: string | null;
   courseId: string;
   categories: string[];
   defaultCategory: string;
@@ -69,6 +72,10 @@ const error = ref('');
 
 const fullName = computed(() => `${props.student.firstName} ${props.student.lastName}`);
 const initials = computed(() => `${props.student.firstName.charAt(0)}${props.student.lastName.charAt(0)}`.toUpperCase());
+
+const hex = computed(() => props.color ?? props.student.color);
+const avatarColor = computed(() => hex.value ?? 'var(--color-primary)');
+const avatarText = computed(() => (hex.value ? labelColor(hex.value) : 'var(--color-primary-contrast)'));
 
 async function choose(symbol: GradeSymbol): Promise<void> {
   // Clicking the active symbol again undoes the grade.
@@ -109,56 +116,38 @@ async function save(symbol: GradeSymbol | null): Promise<void> {
 
 <style scoped>
 .result {
+  align-items: center;
   text-align: center;
 }
 
 .avatar {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   width: 64px;
   height: 64px;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 24px;
+  border-radius: 32px;
+  font-size: 20px;
   font-weight: 600;
+  line-height: 26px;
 }
 
-.label {
-  display: block;
-  margin: 12px 0 4px;
-  font-size: 13px;
-  color: #6b7280;
+.count {
+  color: var(--color-text-secondary);
 }
 
 .symbols {
   display: flex;
-  justify-content: center;
   gap: 10px;
-  margin-top: 10px;
 }
 
 .symbol {
   width: 56px;
   height: 48px;
-  font-size: 24px;
-  font-weight: 600;
+  padding: 0;
 }
 
-.symbol.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
-}
-
-.hint {
-  margin: 6px 0 0;
-  font-size: 12px;
-  color: #6b7280;
-}
-
-.status {
-  margin: 6px 0 0;
-  color: #059669;
+.actions {
+  align-self: stretch;
 }
 </style>
