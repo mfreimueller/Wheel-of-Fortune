@@ -1,12 +1,8 @@
-import { mergeRoster, type MergeReport } from '../core/rosterMerge';
-import { parseRosterCsv, type RosterError } from '../core/rosterCsv';
+import { parseRosterCsv } from '../core/rosterCsv';
+import { mergeRoster } from '../core/rosterMerge';
 import { currentSchoolYear, normalizeSchoolYear } from '../core/schoolYear';
+import type { ImportOutcome } from '../shared/types';
 import type { CourseStore } from './store/courseStore';
-
-export type ImportOutcome =
-  | { status: 'needs-school-year'; suggested: string }
-  | { status: 'imported'; courseId: string; report: MergeReport }
-  | { status: 'error'; error: RosterError | { code: 'unreadable-course'; detail: string } };
 
 export class RosterImportService {
   constructor(

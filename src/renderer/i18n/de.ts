@@ -1,4 +1,47 @@
 export default {
   app: { title: 'Glücksrad' },
-  empty: { noCourse: 'Noch kein Kurs vorhanden. Importiere eine CSV-Datei aus Grader.' },
+  header: {
+    schoolYear: 'Schuljahr',
+    course: 'Kurs',
+    importCsv: 'CSV importieren…',
+  },
+  empty: {
+    noCourse: 'Noch kein Kurs vorhanden. Importiere eine CSV-Datei aus Grader.',
+    noCourseInYear: 'In diesem Schuljahr gibt es keinen Kurs.',
+  },
+  course: { summary: '{count} aktive Schüler' },
+  problems: {
+    title: 'Einige Dateien konnten nicht gelesen werden:',
+  },
+  import: {
+    title: 'CSV importieren',
+    working: 'Importiere…',
+    schoolYearPrompt: 'Die Datei enthält kein Schuljahr. Für welches Schuljahr ist der Kurs?',
+    schoolYearLabel: 'Schuljahr',
+    schoolYearHint: 'z. B. 2026/27',
+    confirm: 'Importieren',
+    close: 'Schließen',
+    cancel: 'Abbrechen',
+    tooLarge: 'Die Datei ist zu groß (maximal 5 MB).',
+    done: 'Import abgeschlossen',
+    courseCreated: 'Neuer Kurs angelegt.',
+    courseUpdated: 'Bestehender Kurs aktualisiert.',
+    added: 'Neu hinzugefügt: {n}',
+    updated: 'Aktualisiert: {n}',
+    reactivated: 'Wieder aktiviert: {n}',
+    deactivated: 'Nicht mehr im Export (inaktiv): {n}',
+    warnings: 'Hinweise',
+    errors: {
+      'missing-column': 'Die Spalte „{detail}“ fehlt.',
+      'mixed-course': 'Die Datei enthält mehrere Kurse. Pro Datei ist nur ein Kurs erlaubt.',
+      'invalid-school-year': 'Ungültiges Schuljahr „{detail}“.',
+      'no-students': 'Die Datei enthält keine Schüler.',
+      'unreadable-course': 'Der bestehende Kurs konnte nicht gelesen werden: {detail}',
+    },
+    warning: {
+      'invalid-color': 'Zeile {row}: Ungültige Farbe „{detail}“ wurde ignoriert.',
+      'missing-name': 'Zeile {row}: Vor- oder Nachname fehlt, Zeile übersprungen.',
+      'duplicate-name': 'Doppelter Name „{detail}“ ohne Id: wird nicht automatisch zugeordnet.',
+    },
+  },
 };

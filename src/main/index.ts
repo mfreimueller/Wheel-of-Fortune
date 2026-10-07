@@ -1,5 +1,9 @@
 import { app, BrowserWindow, shell } from 'electron';
+import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
+import { registerIpc } from './ipc';
+import { RosterImportService } from './rosterImport';
+import { CourseStore } from './store/courseStore';
 
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
@@ -7,7 +11,7 @@ function createWindow(): BrowserWindow {
     height: 800,
     show: false,
     webPreferences: {
-      preload: join(__dirname, '../preload/index.mjs'),
+      preload: join(__dirname, '../preload/index.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -41,6 +45,11 @@ if (!app.requestSingleInstanceLock()) {
       win.focus();
     }
   });
-  void app.whenReady().then(createWindow);
+  void app.whenReady().then(() => {
+    // WHEEL_DATA_DIR lets scripts and tests point the app at another data folder.
+    const store = new CourseStore(process.env['WHEEL_DATA_DIR'] ?? join(app.getPath('userData'), 'data'));
+    registerIpc(store, new RosterImportService(store, (prefix) => `${prefix}_${randomUUID()}`));
+    createWindow();
+  });
   app.on('window-all-closed', () => app.quit());
 }

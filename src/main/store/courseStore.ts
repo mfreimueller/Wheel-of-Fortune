@@ -8,24 +8,11 @@ import {
   type AssessmentsFile,
   type CourseFile,
 } from '../../core/schemas';
-import { readJsonFile, writeJsonAtomic, type ReadError } from './jsonFile';
+import type { CourseListing, ReadError } from '../../shared/types';
+import { readJsonFile, writeJsonAtomic } from './jsonFile';
 
 const SAFE_ID = /^[\w-]+$/;
 const COURSE_SUFFIX = '.course.json';
-
-export interface CourseSummary {
-  id: string;
-  schoolYear: string;
-  className: string;
-  subject: string;
-  archived: boolean;
-}
-
-export interface CourseListing {
-  courses: CourseSummary[];
-  /** Files that exist but could not be read; shown to the user instead of silently ignored. */
-  problems: ReadError[];
-}
 
 /** "2026/27" → "2026-27": a safe folder name. */
 export function schoolYearFolder(schoolYear: string): string {

@@ -3,14 +3,7 @@ import { dirname } from 'node:path';
 import { z } from 'zod';
 import { fail, ok, type Result } from '../../core/result';
 import { CURRENT_SCHEMA_VERSION } from '../../core/schemas';
-
-export interface ReadError {
-  kind: 'missing' | 'invalid' | 'newer-schema' | 'unreadable';
-  file: string;
-  message: string;
-  /** Only for `invalid`: a valid `.bak` exists and could be restored. */
-  backupAvailable: boolean;
-}
+import type { ReadError } from '../../shared/types';
 
 // Writes to the same file run one after another so a slow write can never overtake a newer one.
 const queues = new Map<string, Promise<void>>();
