@@ -1,0 +1,29 @@
+/* Design tokens, mirrored from the Figma file "Wheel of Fortune – UI Design" (variable collection "Tokens"). */
+:root {
+  --color-primary: #004a8d;
+  --color-primary-contrast: #ffffff;
+  --color-text: #111827;
+  --color-text-secondary: #6b7280;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f3f4f6;
+  --color-border: #d1d5db;
+  --color-danger: #b91c1c;
+  --color-success: #059669;
+  --color-overlay: rgb(0 0 0 / 40%);
+  --color-disabled: #9ca3af;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-full: 999px;
+
+  --shadow-dialog: 0 12px 32px rgb(0 0 0 / 20%);
+
+  /* The design uses Inter as a stand-in for the macOS system font; the app renders with the system font. */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
