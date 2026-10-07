@@ -13,10 +13,10 @@ const course = (): CourseFile => ({
 
 describe('applyStudentPatch', () => {
   it('changes only the given fields of the given student', () => {
-    const result = applyStudentPatch(course(), 's1', { weight: 2, pickCount: 5 });
+    const result = applyStudentPatch(course(), 's1', { pickCount: 5 });
     expect(result).toMatchObject({ ok: true });
     const students = result.ok ? result.course.students : [];
-    expect(students[0]).toMatchObject({ weight: 2, pickCount: 5, color: '#ffaabb', active: true });
+    expect(students[0]).toMatchObject({ pickCount: 5, weight: 1, color: '#ffaabb', active: true });
     expect(students[1]).toEqual(course().students[1]);
   });
 
@@ -36,14 +36,12 @@ describe('applyStudentPatch', () => {
     [{ color: 'red' }, 'invalid-color'],
     [{ pickCount: -1 }, 'invalid-pick-count'],
     [{ pickCount: 1.5 }, 'invalid-pick-count'],
-    [{ weight: -1 }, 'invalid-weight'],
-    [{ weight: Number.NaN }, 'invalid-weight'],
   ] as const)('rejects %j', (patch, error) => {
     expect(applyStudentPatch(course(), 's1', patch)).toEqual({ ok: false, error });
   });
 
   it('rejects an unknown student', () => {
-    expect(applyStudentPatch(course(), 'zed', { weight: 2 })).toEqual({ ok: false, error: 'unknown-student' });
+    expect(applyStudentPatch(course(), 'zed', { pickCount: 2 })).toEqual({ ok: false, error: 'unknown-student' });
   });
 
   it('does not mutate its input', () => {

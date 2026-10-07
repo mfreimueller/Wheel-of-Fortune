@@ -20,7 +20,7 @@ Status: draft for review. Nothing is implemented yet.
 
 **Non-goals (v1)**
 - No live connection / shared storage with Grader. No grade calculation. No cloud/sync.
-- No student editing beyond color, weight, pick count, absent/active (names come from the CSV).
+- No student editing beyond color, pick count, absent/active (names come from the CSV). Weights are not editable in the UI.
 - Keyboard shortcuts for symbols, CLI, Linux packaging (macOS `.dmg` first; Linux AppImage later).
 
 ## 2. Stack
@@ -72,7 +72,7 @@ File identity is the generated `courseId`, never the course name.
       "firstName": "Anna", "lastName": "Bob",
       "color": "#ffaabb",                   // #rrggbb or null (null → palette color on the wheel)
       "pickCount": 0,                       // integer ≥ 0
-      "weight": 1,                          // preset values 0.5 | 1 | 2 | 3 (any number ≥ 0 accepted in the file)
+      "weight": 1,                          // only ever set by hand in this file (any number ≥ 0, 0 = never drawn); deliberately never shown or editable in the UI
       "active": true                        // false = no longer in the Grader export
     }
   ],
@@ -223,8 +223,8 @@ Bob;Anna;Mitarbeit;Aufruf (Mitarbeit);07.10.2026;;+
 Single window.
 - **Header**: school-year select → course select (remembers last), buttons Import, Export, Settings; per course: archive, delete (→ `.trash`), "Spezialsegmente…".
 - **Main**: wheel; controls "Fair-Modus" (default on, session-only), "Zähler zurücksetzen" (confirm), "Präsentationsmodus".
-- **Side panel (teacher view)**, one row per student: color picker, name, pick count (editable integer), weight presets
-  `×0.5 ×1 ×2 ×3`, "abwesend" checkbox, "Aufrufen". Inactive students in a collapsed section (greyed, can be reactivated manually).
+- **Side panel (teacher view)**, one row per student: color picker, name, pick count (editable integer),
+  "abwesend" checkbox, "Aufrufen". Weights are intentionally not shown anywhere. Inactive students in a collapsed section (greyed, can be reactivated manually).
 - **Presentation mode**: hides header and side panel (weights, counts, colors would otherwise be visible to the class);
   only the wheel and the dialogs remain. Toggle by button and `Esc`/`P`.
 - **Special segments editor**: list of label, color, kind (`Nochmal drehen` / `Nachricht`), message, probability %, "Anzeigen in" (`Immer` / `Nur im freien Modus`); shows the
@@ -268,7 +268,7 @@ docs/            SPEC.md, formats.md (the CSV contracts), Schueler.csv (sample)
 5. **Wheel + pick flow** — course/year selection, wheel (ported geometry), spin, persisted count, fair/free. *AC: manual spin on fixture course; counts persist across restart.*
 6. **Result dialog + assessments** — categories, symbols, undo, `assessments.json`. *AC: entry created/changed/deleted; persists.*
 7. **Export** — CSV writer, numbering, scope, `exportedAt`. *AC: contract tests green; file imports into a real Grader course.*
-8. **Student panel** — weights presets, absent, inactive, editable count, reset. *AC: weights change draw frequency in a simulation test; absent excluded.*
+8. **Student panel** — absent, inactive, editable count, reset. *AC: absent excluded. Weights are JSON-only (§3.1); a seeded simulation test shows they change the draw frequency.*
 9. **Special segments** — editor, rendering, draw integration, message/spin-again. *AC: seeded tests + manual check.*
 10. **Presentation mode + settings (data folder)**, archive/delete (`.trash`).
 11. **Packaging** — macOS dmg, app icon. *AC: installed app opens and works with a custom data folder.*

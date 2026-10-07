@@ -9,7 +9,7 @@ let app: ElectronApplication;
 
 test.beforeEach(async () => {
   dataDir = await mkdtemp(join(tmpdir(), 'wheel-e2e-'));
-  app = await electron.launch({ args: ['.'], env: { ...process.env, WHEEL_DATA_DIR: dataDir } });
+  app = await electron.launch({ args: ['.', `--user-data-dir=${dataDir}.user`], env: { ...process.env, WHEEL_DATA_DIR: dataDir } });
   // Native file dialogs cannot be driven by Playwright; answer them from the main process.
   await app.evaluate(({ dialog }, file) => {
     dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [file] });
@@ -19,6 +19,7 @@ test.beforeEach(async () => {
 test.afterEach(async () => {
   await app.close();
   await rm(dataDir, { recursive: true, force: true });
+  await rm(`${dataDir}.user`, { recursive: true, force: true });
 });
 
 test('importing a Grader CSV creates a course; importing it again changes nothing', async () => {

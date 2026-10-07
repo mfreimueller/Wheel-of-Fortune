@@ -1,5 +1,5 @@
 import { _electron as electron, expect, test, type ElectronApplication, type Page } from '@playwright/test';
-import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -26,24 +26,21 @@ async function importFixture(page: Page, name = 'grader-roster.csv'): Promise<vo
 
 test.beforeEach(async () => {
   dataDir = await mkdtemp(join(tmpdir(), 'wheel-e2e-'));
-  app = await electron.launch({ args: ['.'], env: { ...process.env, WHEEL_DATA_DIR: dataDir } });
+  app = await electron.launch({ args: ['.', `--user-data-dir=${dataDir}.user`], env: { ...process.env, WHEEL_DATA_DIR: dataDir } });
 });
 test.afterEach(async () => {
   await app.close();
   await rm(dataDir, { recursive: true, force: true });
+  await rm(`${dataDir}.user`, { recursive: true, force: true });
 });
 
-test('color, count and weight are editable and persisted; counters can be reset', async () => {
+test('color and count are editable and persisted; counters can be reset', async () => {
   const page = await app.firstWindow();
   await importFixture(page);
   const [anna] = await students();
 
   await page.getByTestId(`color-${anna!.id}`).fill('#112233');
   await expect.poll(async () => (await students())[0]!.color).toBe('#112233');
-
-  await page.getByTestId(`weight-${anna!.id}-3`).click();
-  await expect.poll(async () => (await students())[0]!.weight).toBe(3);
-  await expect(page.getByTestId(`weight-${anna!.id}-3`)).toHaveAttribute('aria-pressed', 'true');
 
   await page.getByTestId(`count-${anna!.id}`).fill('5');
   await page.getByTestId(`count-${anna!.id}`).blur();
@@ -52,6 +49,35 @@ test('color, count and weight are editable and persisted; counters can be reset'
   await page.getByTestId('reset-counts').click();
   await page.getByTestId('reset-confirm').click();
   await expect.poll(async () => (await students()).map((s) => s.pickCount)).toEqual([0, 0, 0]);
+});
+
+test('a weight set in the JSON file is honoured by the draw but never shown in the UI', async () => {
+  let page = await app.firstWindow();
+  await importFixture(page);
+  await expect(page.getByText('Gewicht')).toHaveCount(0);
+  await app.close();
+
+  // Only the third student keeps a weight above zero: hand-edit the course file like a teacher would.
+  const yearDir = join(dataDir, '2026-27');
+  const file = join(yearDir, (await readdir(yearDir)).find((f) => f.endsWith('.course.json'))!);
+  const course = JSON.parse(await readFile(file, 'utf-8'));
+  course.students[0].weight = 0;
+  course.students[1].weight = 0;
+  await writeFile(file, JSON.stringify(course, null, 2));
+
+  app = await electron.launch({ args: ['.', `--user-data-dir=${dataDir}.user`], env: { ...process.env, WHEEL_DATA_DIR: dataDir } });
+  page = await app.firstWindow();
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.getByTestId('students')).toBeVisible();
+  await expect(page.getByText('Gewicht')).toHaveCount(0);
+  await expect(page.getByText(/×\d/)).toHaveCount(0);
+
+  await page.getByTestId('fair-toggle').uncheck();
+  for (let i = 0; i < 4; i++) {
+    await page.getByTestId('wheel').click();
+    await expect(page.getByTestId('result-name')).toContainText(course.students[2].firstName);
+    await page.getByTestId('result-close').click();
+  }
 });
 
 test('absent students never come up on the wheel', async () => {

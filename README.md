@@ -6,7 +6,7 @@ loosely coupled. The only connection between the two apps is two CSV files; all 
 - **Import** a roster CSV exported by Grader → creates the course (or updates it: new students are added, known
   students only get a new color, students that left the export become inactive).
 - **Spin** the wheel (click it). *Fair mode* only draws students with the fewest picks; *free mode* draws everybody.
-  Student weights make some students more likely; special segments ("nochmal drehen", a message) add fun and are never tracked.
+  Per-student weights (set by hand in the course JSON, never shown in the UI) make some students more likely; special segments ("nochmal drehen", a message) add fun and are never tracked.
 - **Grade** the picked student with `+` `~` `−` in the result dialog.
 - **Export** the graded picks as CSV for Grader's assessment import.
 - **Presentation mode** (`P` / `Esc`) hides counts, weights and colors from the class.

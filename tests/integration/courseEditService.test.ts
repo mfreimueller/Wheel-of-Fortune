@@ -27,15 +27,15 @@ afterEach(async () => {
 
 describe('CourseEditService', () => {
   it('persists a student patch', async () => {
-    expect(await service.updateStudent('c1', 's1', { weight: 3 })).toEqual({ ok: true });
+    expect(await service.updateStudent('c1', 's1', { color: '#112233' })).toEqual({ ok: true });
     const loaded = await store.loadCourse('c1');
-    expect(loaded.ok && loaded.value.students[0]).toMatchObject({ weight: 3, pickCount: 3 });
+    expect(loaded.ok && loaded.value.students[0]).toMatchObject({ color: '#112233', pickCount: 3, weight: 1 });
   });
 
   it('reports validation errors without saving', async () => {
-    expect(await service.updateStudent('c1', 's1', { weight: -2 })).toEqual({ ok: false, error: 'invalid-weight' });
+    expect(await service.updateStudent('c1', 's1', { pickCount: -2 })).toEqual({ ok: false, error: 'invalid-pick-count' });
     const loaded = await store.loadCourse('c1');
-    expect(loaded.ok && loaded.value.students[0]!.weight).toBe(1);
+    expect(loaded.ok && loaded.value.students[0]!.pickCount).toBe(3);
   });
 
   it('resets all pick counts', async () => {

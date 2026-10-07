@@ -5,11 +5,10 @@ export interface StudentPatch {
   /** `null` clears the own color (the wheel palette is used again). */
   color?: string | null;
   pickCount?: number;
-  weight?: number;
   active?: boolean;
 }
 
-export type PatchError = 'unknown-student' | 'invalid-color' | 'invalid-pick-count' | 'invalid-weight';
+export type PatchError = 'unknown-student' | 'invalid-color' | 'invalid-pick-count';
 
 export type PatchResult = { ok: true; course: CourseFile } | { ok: false; error: PatchError };
 
@@ -27,10 +26,6 @@ export function applyStudentPatch(course: CourseFile, studentId: string, patch: 
   if (patch.pickCount !== undefined) {
     if (!Number.isInteger(patch.pickCount) || patch.pickCount < 0) return { ok: false, error: 'invalid-pick-count' };
     next.pickCount = patch.pickCount;
-  }
-  if (patch.weight !== undefined) {
-    if (!Number.isFinite(patch.weight) || patch.weight < 0) return { ok: false, error: 'invalid-weight' };
-    next.weight = patch.weight;
   }
   if (patch.active !== undefined) next.active = patch.active;
 

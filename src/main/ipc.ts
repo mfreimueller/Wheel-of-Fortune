@@ -32,7 +32,6 @@ const studentUpdateInput = z.object({
     .object({
       color: z.string().max(20).nullable().optional(),
       pickCount: z.number().int().min(0).max(100000).optional(),
-      weight: z.number().min(0).max(100).optional(),
       active: z.boolean().optional(),
     })
     .strict(),

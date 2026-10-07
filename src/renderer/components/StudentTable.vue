@@ -6,7 +6,6 @@
           <th>{{ t('table.color') }}</th>
           <th>{{ t('table.name') }}</th>
           <th>{{ t('table.count') }}</th>
-          <th>{{ t('table.weight') }}</th>
           <th>{{ t('table.absent') }}</th>
           <th />
         </tr>
@@ -46,21 +45,6 @@
               :data-testid="`count-${s.id}`"
               @change="emit('update', s.id, { pickCount: Number(($event.target as HTMLInputElement).value) })"
             >
-          </td>
-          <td>
-            <div class="weights" role="group" :aria-label="t('table.weightFor', { name: fullName(s) })">
-              <button
-                v-for="w in weightsFor(s.weight)"
-                :key="w"
-                type="button"
-                :class="['weight', { active: w === s.weight }]"
-                :aria-pressed="w === s.weight"
-                :data-testid="`weight-${s.id}-${w}`"
-                @click="emit('update', s.id, { weight: w })"
-              >
-                ×{{ w }}
-              </button>
-            </div>
           </td>
           <td>
             <input
@@ -107,16 +91,12 @@ const emit = defineEmits<{
 }>();
 const { t } = useI18n();
 
-const WEIGHT_PRESETS = [0.5, 1, 2, 3];
-
 const byName = (a: Student, b: Student): number =>
   a.lastName.localeCompare(b.lastName, 'de') || a.firstName.localeCompare(b.firstName, 'de');
 const active = computed(() => props.students.filter((s) => s.active).sort(byName));
 const inactive = computed(() => props.students.filter((s) => !s.active).sort(byName));
 
 const fullName = (s: Student): string => `${s.lastName} ${s.firstName}`;
-// A weight that was edited by hand in the JSON file is shown as an extra button instead of being hidden.
-const weightsFor = (weight: number): number[] => (WEIGHT_PRESETS.includes(weight) ? WEIGHT_PRESETS : [...WEIGHT_PRESETS, weight].sort((a, b) => a - b));
 </script>
 
 <style scoped>
@@ -140,7 +120,7 @@ tr.absent td {
 }
 
 tr.absent td:last-child,
-tr.absent td:nth-child(5) {
+tr.absent td:nth-child(4) {
   text-decoration: none;
 }
 
@@ -164,22 +144,6 @@ tr.absent td:nth-child(5) {
 
 .count {
   width: 56px;
-}
-
-.weights {
-  display: flex;
-  gap: 2px;
-}
-
-.weight {
-  padding: 2px 6px;
-  font-size: 12px;
-}
-
-.weight.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
 }
 
 .inactive {
