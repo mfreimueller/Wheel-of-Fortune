@@ -71,3 +71,9 @@ export type EditOutcome =
   | { ok: false; error: PatchError | SpecialsError | 'course-unreadable' };
 
 export type SpecialsError = 'invalid-probability' | 'sum-too-high' | 'duplicate-id';
+
+export interface DataDirInfo {
+  dataDir: string;
+  /** `env` (WHEEL_DATA_DIR) cannot be changed from the settings dialog. */
+  source: 'env' | 'config' | 'default';
+}

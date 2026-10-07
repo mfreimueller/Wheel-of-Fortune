@@ -3,9 +3,9 @@ import type { Result } from '../core/result';
 import type { StudentPatch } from '../core/studentPatch';
 import type { Special } from '../core/types';
 import type { CourseFile } from '../core/schemas';
-import type { CourseListing, EditOutcome, ExportOutcome, GradeOutcome, ImportOutcome, PickOutcome, ReadError, SummaryOutcome } from './types';
+import type { CourseListing, DataDirInfo, EditOutcome, ExportOutcome, GradeOutcome, ImportOutcome, PickOutcome, ReadError, SummaryOutcome } from './types';
 
-export type { CourseListing, EditOutcome, ExportOutcome, GradeOutcome, GradeSymbol, ImportOutcome, PickOutcome, ReadError, SummaryOutcome };
+export type { CourseListing, DataDirInfo, EditOutcome, ExportOutcome, GradeOutcome, GradeSymbol, ImportOutcome, PickOutcome, ReadError, SummaryOutcome };
 
 export type PickedFile = { ok: true; name: string; text: string } | { ok: false; error: 'too-large' } | null;
 
@@ -16,6 +16,9 @@ export interface WheelApi {
     load: (id: string) => Promise<Result<CourseFile, ReadError>>;
     updateStudent: (input: { courseId: string; studentId: string; patch: StudentPatch }) => Promise<EditOutcome>;
     resetPickCounts: (courseId: string) => Promise<EditOutcome>;
+    setArchived: (input: { courseId: string; archived: boolean }) => Promise<EditOutcome>;
+    /** Moves the course files to `.trash`. */
+    delete: (courseId: string) => Promise<EditOutcome>;
     /** Replaces all special segments of the course. */
     setSpecials: (input: { courseId: string; specials: Special[] }) => Promise<EditOutcome>;
   };
@@ -29,6 +32,12 @@ export interface WheelApi {
     draw: (input: { courseId: string; fair: boolean; absentIds: string[] }) => Promise<PickOutcome>;
     /** Direct pick without a spin. */
     student: (input: { courseId: string; studentId: string }) => Promise<PickOutcome>;
+  };
+  settings: {
+    get: () => Promise<DataDirInfo>;
+    /** Opens a folder dialog; on success the app restarts with the new folder. `null` when cancelled. */
+    chooseDataDir: () => Promise<{ ok: true } | { ok: false; error: 'locked' } | null>;
+    revealDataDir: () => Promise<void>;
   };
   export: {
     summary: (courseId: string) => Promise<SummaryOutcome>;
@@ -47,6 +56,11 @@ export const CHANNELS = {
   studentUpdate: 'courses:updateStudent',
   countsReset: 'courses:resetPickCounts',
   specialsSet: 'courses:setSpecials',
+  courseArchive: 'courses:setArchived',
+  courseDelete: 'courses:delete',
+  settingsGet: 'settings:get',
+  settingsChoose: 'settings:chooseDataDir',
+  settingsReveal: 'settings:revealDataDir',
   rosterPick: 'roster:pick',
   rosterImport: 'roster:import',
   pickDraw: 'pick:draw',

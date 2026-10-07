@@ -28,6 +28,21 @@ export class CourseEditService {
     return { ok: true };
   }
 
+  async setArchived(courseId: string, archived: boolean): Promise<EditOutcome> {
+    const loaded = await this.store.loadCourse(courseId);
+    if (!loaded.ok) return { ok: false, error: 'course-unreadable' };
+    await this.store.saveCourse({ ...loaded.value, archived });
+    return { ok: true };
+  }
+
+  /** The files move to `.trash`; nothing is unlinked. */
+  async deleteCourse(courseId: string): Promise<EditOutcome> {
+    const loaded = await this.store.loadCourse(courseId);
+    if (!loaded.ok) return { ok: false, error: 'course-unreadable' };
+    await this.store.moveToTrash(courseId);
+    return { ok: true };
+  }
+
   async resetPickCounts(courseId: string): Promise<EditOutcome> {
     const loaded = await this.store.loadCourse(courseId);
     if (!loaded.ok) return { ok: false, error: 'course-unreadable' };

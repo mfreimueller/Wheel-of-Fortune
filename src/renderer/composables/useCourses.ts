@@ -20,10 +20,13 @@ export function useCourses() {
   const course = ref<CourseFile | null>(null);
   const loadError = ref<ReadError | null>(null);
 
-  const years = computed(() => [...new Set(listing.value.courses.map((c) => c.schoolYear))].sort().reverse());
+  const showArchived = ref(false);
+
+  const visible = computed(() => listing.value.courses.filter((c) => showArchived.value || !c.archived));
+  const years = computed(() => [...new Set(visible.value.map((c) => c.schoolYear))].sort().reverse());
   const coursesInYear = computed<CourseSummary[]>(() =>
-    listing.value.courses
-      .filter((c) => c.schoolYear === year.value && !c.archived)
+    visible.value
+      .filter((c) => c.schoolYear === year.value)
       .sort((a, b) => `${a.className} ${a.subject}`.localeCompare(`${b.className} ${b.subject}`, 'de')),
   );
 
@@ -58,6 +61,7 @@ export function useCourses() {
     else loadError.value = loaded.error;
   }
 
+  watch(showArchived, () => void refresh());
   watch(year, () => {
     if (!coursesInYear.value.some((c) => c.id === courseId.value)) courseId.value = coursesInYear.value[0]?.id ?? '';
   });
@@ -74,5 +78,5 @@ export function useCourses() {
   year.value = saved.year;
   courseId.value = saved.courseId;
 
-  return { listing, years, year, coursesInYear, courseId, course, loadError, refresh, reload };
+  return { listing, years, year, coursesInYear, courseId, course, loadError, showArchived, refresh, reload };
 }

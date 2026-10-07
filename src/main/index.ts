@@ -2,6 +2,7 @@ import { app, BrowserWindow, shell } from 'electron';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { CourseEditService } from './courseEditService';
+import { readConfig, resolveDataDir } from './config';
 import { ExportService } from './exportService';
 import { GradingService } from './gradingService';
 import { registerIpc } from './ipc';
@@ -49,9 +50,11 @@ if (!app.requestSingleInstanceLock()) {
       win.focus();
     }
   });
-  void app.whenReady().then(() => {
-    // WHEEL_DATA_DIR lets scripts and tests point the app at another data folder.
-    const store = new CourseStore(process.env['WHEEL_DATA_DIR'] ?? join(app.getPath('userData'), 'data'));
+  void app.whenReady().then(async () => {
+    const userData = app.getPath('userData');
+    // WHEEL_DATA_DIR (scripts, tests) beats the folder chosen in the settings dialog.
+    const info = resolveDataDir({ env: process.env['WHEEL_DATA_DIR'], config: await readConfig(userData), userData });
+    const store = new CourseStore(info.dataDir);
     registerIpc({
       store,
       importer: new RosterImportService(store, (prefix) => `${prefix}_${randomUUID()}`),
@@ -59,6 +62,7 @@ if (!app.requestSingleInstanceLock()) {
       grader: new GradingService(store),
       exporter: new ExportService(store),
       editor: new CourseEditService(store),
+      settings: { info, userData },
     });
     createWindow();
   });

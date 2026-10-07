@@ -77,4 +77,25 @@ describe('CourseEditService', () => {
       expect(await service.setSpecials('nope', [])).toEqual({ ok: false, error: 'course-unreadable' });
     });
   });
+
+  describe('archive and delete', () => {
+    it('archives and unarchives a course', async () => {
+      expect(await service.setArchived('c1', true)).toEqual({ ok: true });
+      const archived = await store.loadCourse('c1');
+      expect(archived.ok && archived.value.archived).toBe(true);
+      expect(await service.setArchived('c1', false)).toEqual({ ok: true });
+      const restored = await store.loadCourse('c1');
+      expect(restored.ok && restored.value.archived).toBe(false);
+    });
+
+    it('moves a deleted course to the trash', async () => {
+      expect(await service.deleteCourse('c1')).toEqual({ ok: true });
+      expect((await store.listCourses()).courses).toEqual([]);
+    });
+
+    it('reports an unknown course', async () => {
+      expect(await service.setArchived('nope', true)).toEqual({ ok: false, error: 'course-unreadable' });
+      expect(await service.deleteCourse('nope')).toEqual({ ok: false, error: 'course-unreadable' });
+    });
+  });
 });
