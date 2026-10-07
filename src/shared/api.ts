@@ -1,8 +1,9 @@
+import type { GradeSymbol } from '../core/assessments';
 import type { Result } from '../core/result';
 import type { CourseFile } from '../core/schemas';
-import type { CourseListing, ImportOutcome, PickOutcome, ReadError } from './types';
+import type { CourseListing, GradeOutcome, ImportOutcome, PickOutcome, ReadError } from './types';
 
-export type { CourseListing, ImportOutcome, PickOutcome, ReadError };
+export type { CourseListing, GradeOutcome, GradeSymbol, ImportOutcome, PickOutcome, ReadError };
 
 export type PickedFile = { ok: true; name: string; text: string } | { ok: false; error: 'too-large' } | null;
 
@@ -23,6 +24,10 @@ export interface WheelApi {
     /** Direct pick without a spin. */
     student: (input: { courseId: string; studentId: string }) => Promise<PickOutcome>;
   };
+  grade: {
+    /** Creates, replaces (`replaces`) or, with `symbol: null`, removes today's graded pick. */
+    set: (input: { courseId: string; studentId: string; category: string; symbol: GradeSymbol | null; replaces?: string | null }) => Promise<GradeOutcome>;
+  };
 }
 
 export const CHANNELS = {
@@ -32,4 +37,5 @@ export const CHANNELS = {
   rosterImport: 'roster:import',
   pickDraw: 'pick:draw',
   pickStudent: 'pick:student',
+  gradeSet: 'grade:set',
 } as const;

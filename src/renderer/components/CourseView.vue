@@ -40,7 +40,14 @@
       </div>
     </template>
 
-    <PickResultDialog v-if="result" :student="result" @close="result = null" />
+    <PickResultDialog
+      v-if="result"
+      :student="result"
+      :course-id="course.id"
+      :categories="course.categories"
+      :default-category="course.defaultCategory"
+      @close="result = null"
+    />
     <SpecialDialog v-if="special" :special="special" @close="special = null" />
   </div>
 </template>

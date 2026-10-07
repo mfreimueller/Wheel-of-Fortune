@@ -22,7 +22,19 @@ export default {
     },
   },
   table: { name: 'Name', count: 'Aufrufe', pick: 'Aufrufen' },
-  result: { selected: '{name} wurde ausgewählt', count: 'Aufruf Nr. {n}' },
+  result: {
+    selected: '{name} wurde ausgewählt',
+    count: 'Aufruf Nr. {n}',
+    gradeOptional: 'Leistung eintragen (optional)',
+    symbol: { PLUS: 'Plus', WELLE: 'Welle', MINUS: 'Minus' },
+    undoHint: 'Aktives Symbol erneut klicken = zurücksetzen',
+    saved: 'Gespeichert.',
+    errors: {
+      'unknown-student': 'Dieser Schüler ist nicht (mehr) im Kurs.',
+      'course-unreadable': 'Der Kurs konnte nicht gelesen werden.',
+      'assessments-unreadable': 'Die Leistungsdatei konnte nicht gelesen werden.',
+    },
+  },
   problems: {
     title: 'Einige Dateien konnten nicht gelesen werden:',
   },

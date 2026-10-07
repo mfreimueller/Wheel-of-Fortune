@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell } from 'electron';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
+import { GradingService } from './gradingService';
 import { registerIpc } from './ipc';
 import { PickService } from './pickService';
 import { RosterImportService } from './rosterImport';
@@ -49,7 +50,7 @@ if (!app.requestSingleInstanceLock()) {
   void app.whenReady().then(() => {
     // WHEEL_DATA_DIR lets scripts and tests point the app at another data folder.
     const store = new CourseStore(process.env['WHEEL_DATA_DIR'] ?? join(app.getPath('userData'), 'data'));
-    registerIpc(store, new RosterImportService(store, (prefix) => `${prefix}_${randomUUID()}`), new PickService(store));
+    registerIpc(store, new RosterImportService(store, (prefix) => `${prefix}_${randomUUID()}`), new PickService(store), new GradingService(store));
     createWindow();
   });
   app.on('window-all-closed', () => app.quit());

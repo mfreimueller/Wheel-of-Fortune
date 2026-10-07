@@ -47,3 +47,7 @@ export type PickOutcome =
       picked: PickedStudent | null;
     }
   | { ok: false; error: 'no-eligible-students' | 'unknown-student' | 'course-unreadable' };
+
+export type GradeOutcome =
+  | { ok: true; entryId: string | null }
+  | { ok: false; error: 'unknown-student' | 'course-unreadable' | 'assessments-unreadable' };
