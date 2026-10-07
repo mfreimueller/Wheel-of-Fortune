@@ -1,5 +1,5 @@
 <template>
-  <header v-if="!presenting" class="bar">
+  <header class="bar">
     <label>
       {{ t('header.schoolYear') }}
       <select v-model="year" data-testid="year-select" :disabled="years.length === 0">
@@ -33,7 +33,7 @@
     <button data-testid="settings-button" @click="settings = true">{{ t('header.settings') }}</button>
   </header>
 
-  <section v-if="listing.problems.length && !presenting" class="problems" role="alert">
+  <section v-if="listing.problems.length" class="problems" role="alert">
     <p>{{ t('problems.title') }}</p>
     <ul>
       <li v-for="p in listing.problems" :key="p.file">{{ p.file }}: {{ p.message }}</li>
@@ -42,14 +42,10 @@
 
   <main>
     <p v-if="loadError" class="error" role="alert">{{ loadError.file }}: {{ loadError.message }}</p>
-    <CourseView v-else-if="course" :key="course.id" :course="course" :presenting="presenting" @changed="reload" @present="presenting = true" />
+    <CourseView v-else-if="course" :key="course.id" :course="course" @changed="reload" />
     <p v-else-if="years.length === 0" data-testid="empty">{{ t('empty.noCourse') }}</p>
     <p v-else>{{ t('empty.noCourseInYear') }}</p>
   </main>
-
-  <button v-if="presenting" class="exit-presentation" data-testid="exit-presentation" :title="t('presentation.exit')" @click="presenting = false">
-    {{ t('presentation.exit') }}
-  </button>
 
   <div v-if="deleting && course" class="overlay" @click.self="deleting = false">
     <div class="dialog" role="dialog" aria-modal="true" :aria-label="t('header.delete')">
@@ -72,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CourseView from './components/CourseView.vue';
 import ExportDialog from './components/ExportDialog.vue';
@@ -86,7 +82,6 @@ const importing = ref(false);
 const exporting = ref(false);
 const settings = ref(false);
 const deleting = ref(false);
-const presenting = ref(false);
 const menu = ref<HTMLDetailsElement | null>(null);
 
 const courseSummary = computed(() => listing.value.courses.find((c) => c.id === courseId.value));
@@ -111,20 +106,7 @@ async function confirmDelete(): Promise<void> {
   await refresh();
 }
 
-// P toggles the presentation mode, Esc leaves it. Never while typing into a field.
-function onKeydown(event: KeyboardEvent): void {
-  const target = event.target as HTMLElement | null;
-  if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
-  if (event.metaKey || event.ctrlKey || event.altKey) return;
-  if (event.key === 'Escape' && presenting.value) presenting.value = false;
-  else if (event.key.toLowerCase() === 'p' && course.value) presenting.value = !presenting.value;
-}
-
-onMounted(() => {
-  window.addEventListener('keydown', onKeydown);
-  void refresh();
-});
-onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
+onMounted(() => refresh());
 </script>
 
 <style scoped>
@@ -153,17 +135,5 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 
 .check {
   font-size: 13px;
-}
-
-.exit-presentation {
-  position: fixed;
-  top: 8px;
-  right: 8px;
-  opacity: 0.08;
-}
-
-.exit-presentation:hover,
-.exit-presentation:focus-visible {
-  opacity: 1;
 }
 </style>

@@ -1,26 +1,24 @@
 <template>
   <div class="course">
-    <h1 v-if="!presenting" data-testid="course-title">{{ course.className }} · {{ course.subject }}</h1>
+    <h1 data-testid="course-title">{{ course.className }} · {{ course.subject }}</h1>
 
     <p v-if="activeStudents.length === 0" data-testid="no-students">{{ t('wheel.noStudents') }}</p>
     <template v-else>
-      <div v-if="!presenting" class="controls">
+      <div class="controls">
         <label class="toggle">
           <input v-model="fair" type="checkbox" data-testid="fair-toggle" :disabled="picking" />
           {{ t('wheel.fair') }}
         </label>
-        <button type="button" data-testid="present" @click="emit('present')">{{ t('presentation.enter') }}</button>
         <button type="button" data-testid="edit-specials" :disabled="picking" @click="editingSpecials = true">{{ t('wheel.specials') }}</button>
         <button type="button" data-testid="reset-counts" :disabled="picking" @click="confirmingReset = true">{{ t('wheel.reset') }}</button>
         <span class="hint">{{ t('wheel.hint') }}</span>
       </div>
       <p v-if="error" class="error" role="alert">{{ error }}</p>
 
-      <div :class="['layout', { presenting }]">
+      <div class="layout">
         <StudentWheel ref="wheel" :items="items" :disabled="picking" @spin="spin" />
 
         <StudentTable
-          v-if="!presenting"
           :students="course.students"
           :absent-ids="absentIds"
           :picking="picking"
@@ -75,8 +73,8 @@ import PickResultDialog from './PickResultDialog.vue';
 import SpecialDialog from './SpecialDialog.vue';
 import StudentWheel from './StudentWheel.vue';
 
-const props = defineProps<{ course: CourseFile; presenting: boolean }>();
-const emit = defineEmits<{ changed: []; present: [] }>();
+const props = defineProps<{ course: CourseFile }>();
+const emit = defineEmits<{ changed: [] }>();
 const { t } = useI18n();
 
 const FIRST_SPIN_MS = 6000;
@@ -185,8 +183,5 @@ async function run(action: () => Promise<void>): Promise<void> {
   grid-template-columns: minmax(0, 1fr) max-content;
   gap: 24px;
   align-items: start;
-}
-.layout.presenting {
-  display: block;
 }
 </style>

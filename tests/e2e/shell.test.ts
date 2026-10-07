@@ -25,35 +25,6 @@ test.afterEach(async () => {
   await rm(`${dataDir}.user`, { recursive: true, force: true });
 });
 
-test('presentation mode hides everything but the wheel; P and Esc toggle it', async () => {
-  const page = await setUp();
-  await expect(page.getByTestId('students')).toBeVisible();
-
-  await page.getByTestId('present').click();
-  await expect(page.getByTestId('students')).toHaveCount(0);
-  await expect(page.getByTestId('year-select')).toHaveCount(0);
-  await expect(page.getByTestId('wheel')).toBeVisible();
-
-  await page.getByTestId('wheel').click(); // the wheel still works
-  await expect(page.getByTestId('result-name')).toBeVisible();
-  await page.getByTestId('result-close').click();
-
-  await page.keyboard.press('Escape');
-  await expect(page.getByTestId('students')).toBeVisible();
-  await page.keyboard.press('p');
-  await expect(page.getByTestId('students')).toHaveCount(0);
-  await page.getByTestId('exit-presentation').click();
-  await expect(page.getByTestId('students')).toBeVisible();
-});
-
-test('typing a p into a field does not toggle the presentation mode', async () => {
-  const page = await setUp();
-  const id = await page.locator('[data-student]').first().getAttribute('data-student');
-  await page.getByTestId(`count-${id}`).focus();
-  await page.keyboard.press('p');
-  await expect(page.getByTestId('students')).toBeVisible();
-});
-
 test('a course can be archived, shown again and deleted into the trash', async () => {
   const page = await setUp();
 

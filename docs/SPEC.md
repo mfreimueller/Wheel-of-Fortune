@@ -22,6 +22,7 @@ Status: draft for review. Nothing is implemented yet.
 - No live connection / shared storage with Grader. No grade calculation. No cloud/sync.
 - No student editing beyond color, pick count, absent/active (names come from the CSV). Weights are not editable in the UI.
 - Keyboard shortcuts for symbols, CLI, Linux packaging (macOS `.dmg` first; Linux AppImage later).
+- No presentation mode (dropped): the student panel is always visible, and weights are kept out of the UI by living only in the JSON.
 
 ## 2. Stack
 
@@ -85,7 +86,7 @@ File identity is the generated `courseId`, never the course name.
 }
 ```
 
-Session-only (not persisted): fair-mode toggle (default on), "absent today" flags, presentation mode.
+Session-only (not persisted): fair-mode toggle (default on), "absent today" flags.
 
 ### 3.2 `<courseId>.assessments.json`
 
@@ -222,11 +223,9 @@ Bob;Anna;Mitarbeit;Aufruf (Mitarbeit);07.10.2026;;+
 
 Single window.
 - **Header**: school-year select → course select (remembers last), buttons Import, Export, Settings; per course: archive, delete (→ `.trash`), "Spezialsegmente…".
-- **Main**: wheel; controls "Fair-Modus" (default on, session-only), "Zähler zurücksetzen" (confirm), "Präsentationsmodus".
+- **Main**: wheel; controls "Fair-Modus" (default on, session-only), "Zähler zurücksetzen" (confirm).
 - **Side panel (teacher view)**, one row per student: color picker, name, pick count (editable integer),
   "abwesend" checkbox, "Aufrufen". Weights are intentionally not shown anywhere. Inactive students in a collapsed section (greyed, can be reactivated manually).
-- **Presentation mode**: hides header and side panel (weights, counts, colors would otherwise be visible to the class);
-  only the wheel and the dialogs remain. Toggle by button and `Esc`/`P`.
 - **Special segments editor**: list of label, color, kind (`Nochmal drehen` / `Nachricht`), message, probability %, "Anzeigen in" (`Immer` / `Nur im freien Modus`); shows the
   remaining share for students; blocks sum ≥ 100.
 - Empty states: no course yet → big "CSV importieren" call to action; no eligible students → hint instead of wheel.
@@ -270,7 +269,7 @@ docs/            SPEC.md, formats.md (the CSV contracts), Schueler.csv (sample)
 7. **Export** — CSV writer, numbering, scope, `exportedAt`. *AC: contract tests green; file imports into a real Grader course.*
 8. **Student panel** — absent, inactive, editable count, reset. *AC: absent excluded. Weights are JSON-only (§3.1); a seeded simulation test shows they change the draw frequency.*
 9. **Special segments** — editor, rendering, draw integration, message/spin-again. *AC: seeded tests + manual check.*
-10. **Presentation mode + settings (data folder)**, archive/delete (`.trash`).
+10. **Settings (data folder)**, archive/delete (`.trash`).
 11. **Packaging** — macOS dmg, app icon. *AC: installed app opens and works with a custom data folder.*
 12. **Grader-side export change** (§9) — separate repo.
 

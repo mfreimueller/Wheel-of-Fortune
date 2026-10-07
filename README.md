@@ -9,7 +9,6 @@ loosely coupled. The only connection between the two apps is two CSV files; all 
   Per-student weights (set by hand in the course JSON, never shown in the UI) make some students more likely; special segments ("nochmal drehen", a message) add fun and are never tracked.
 - **Grade** the picked student with `+` `~` `−` in the result dialog.
 - **Export** the graded picks as CSV for Grader's assessment import.
-- **Presentation mode** (`P` / `Esc`) hides counts, weights and colors from the class.
 
 Formats: [docs/formats.md](docs/formats.md). Full specification: [docs/SPEC.md](docs/SPEC.md).
 

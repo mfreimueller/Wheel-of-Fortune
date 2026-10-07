@@ -14,7 +14,6 @@ export default {
     delete: 'Kurs löschen…',
     deleteConfirm: 'Kurs „{name}“ löschen? Er wird in den Ordner .trash im Datenordner verschoben und kann dort wiederhergestellt werden.',
   },
-  presentation: { enter: 'Präsentationsmodus (P)', exit: 'Präsentationsmodus beenden (Esc)' },
   settings: {
     title: 'Einstellungen',
     dataDir: 'Datenordner',
