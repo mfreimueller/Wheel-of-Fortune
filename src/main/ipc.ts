@@ -2,6 +2,7 @@ import { app, dialog, ipcMain } from 'electron';
 import { readFile, stat, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { z } from 'zod';
+import { specialSchema } from '../core/schemas';
 import { CHANNELS, type PickedFile } from '../shared/api';
 import type { CourseEditService } from './courseEditService';
 import type { ExportService } from './exportService';
@@ -34,6 +35,7 @@ const studentUpdateInput = z.object({
     })
     .strict(),
 });
+const specialsInput = z.object({ courseId, specials: z.array(specialSchema).max(30) });
 const exportInput = z.object({ courseId, scope: z.enum(['new', 'all']) });
 const importInput = z.object({ text: z.string().max(MAX_CSV_BYTES), schoolYear: z.string().max(20).optional() });
 
@@ -53,6 +55,10 @@ export function registerIpc({ store, importer, picker, grader, exporter, editor 
   ipcMain.handle(CHANNELS.studentUpdate, (_event, input: unknown) => {
     const { courseId: id, studentId, patch } = studentUpdateInput.parse(input);
     return editor.updateStudent(id, studentId, patch);
+  });
+  ipcMain.handle(CHANNELS.specialsSet, (_event, input: unknown) => {
+    const { courseId: id, specials } = specialsInput.parse(input);
+    return editor.setSpecials(id, specials);
   });
   ipcMain.handle(CHANNELS.countsReset, (_event, id: unknown) => editor.resetPickCounts(courseId.parse(id)));
 

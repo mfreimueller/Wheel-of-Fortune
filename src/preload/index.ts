@@ -8,6 +8,7 @@ const api: WheelApi = {
     load: (id) => ipcRenderer.invoke(CHANNELS.courseLoad, id),
     updateStudent: (input) => ipcRenderer.invoke(CHANNELS.studentUpdate, input),
     resetPickCounts: (id) => ipcRenderer.invoke(CHANNELS.countsReset, id),
+    setSpecials: (input) => ipcRenderer.invoke(CHANNELS.specialsSet, input),
   },
   roster: {
     pick: () => ipcRenderer.invoke(CHANNELS.rosterPick),

@@ -9,6 +9,7 @@
           <input v-model="fair" type="checkbox" data-testid="fair-toggle" :disabled="picking" />
           {{ t('wheel.fair') }}
         </label>
+        <button type="button" data-testid="edit-specials" :disabled="picking" @click="editingSpecials = true">{{ t('wheel.specials') }}</button>
         <button type="button" data-testid="reset-counts" :disabled="picking" @click="confirmingReset = true">{{ t('wheel.reset') }}</button>
         <span class="hint">{{ t('wheel.hint') }}</span>
       </div>
@@ -36,6 +37,13 @@
       :default-category="course.defaultCategory"
       @close="result = null"
     />
+    <SpecialsEditor
+      v-if="editingSpecials"
+      :course-id="course.id"
+      :specials="course.specials"
+      @close="editingSpecials = false"
+      @saved="emit('changed')"
+    />
     <SpecialDialog v-if="special" :special="special" @close="special = null" />
 
     <div v-if="confirmingReset" class="overlay" @click.self="confirmingReset = false">
@@ -59,6 +67,7 @@ import type { StudentPatch } from '../../core/studentPatch';
 import type { Special } from '../../core/types';
 import type { PickedStudent } from '../../shared/types';
 import { layoutItems } from '../utils/wheelGeometry';
+import SpecialsEditor from './SpecialsEditor.vue';
 import StudentTable from './StudentTable.vue';
 import PickResultDialog from './PickResultDialog.vue';
 import SpecialDialog from './SpecialDialog.vue';
@@ -79,6 +88,7 @@ const result = ref<PickedStudent | null>(null);
 const special = ref<Special | null>(null);
 const wheel = ref<InstanceType<typeof StudentWheel> | null>(null);
 const confirmingReset = ref(false);
+const editingSpecials = ref(false);
 // Session-only: who is absent today is not worth persisting.
 const absentIds = ref<ReadonlySet<string>>(new Set());
 
@@ -170,7 +180,7 @@ async function run(action: () => Promise<void>): Promise<void> {
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(420px, 520px);
+  grid-template-columns: minmax(0, 1fr) max-content;
   gap: 24px;
   align-items: start;
 }

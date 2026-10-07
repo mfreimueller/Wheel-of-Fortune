@@ -13,7 +13,8 @@
       </thead>
       <tbody>
         <tr v-for="s in active" :key="s.id" :data-student="s.id" :class="{ absent: absentIds.has(s.id) }">
-          <td class="color">
+          <td>
+            <div class="color">
             <input
               type="color"
               :value="s.color ?? '#9ca3af'"
@@ -31,6 +32,7 @@
             >
               ×
             </button>
+            </div>
           </td>
           <td>{{ s.lastName }} {{ s.firstName }}</td>
           <td>

@@ -66,4 +66,8 @@ export type ExportOutcome =
     }
   | { ok: false; error: 'course-unreadable' | 'nothing-to-export' };
 
-export type EditOutcome = { ok: true } | { ok: false; error: PatchError | 'course-unreadable' };
+export type EditOutcome =
+  | { ok: true }
+  | { ok: false; error: PatchError | SpecialsError | 'course-unreadable' };
+
+export type SpecialsError = 'invalid-probability' | 'sum-too-high' | 'duplicate-id';

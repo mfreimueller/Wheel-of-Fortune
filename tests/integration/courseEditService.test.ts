@@ -48,4 +48,33 @@ describe('CourseEditService', () => {
     expect(await service.updateStudent('nope', 's1', {})).toEqual({ ok: false, error: 'course-unreadable' });
     expect(await service.resetPickCounts('nope')).toEqual({ ok: false, error: 'course-unreadable' });
   });
+
+  describe('setSpecials', () => {
+    const special = (id: string, probability: number) => ({
+      id, label: id, color: '#6d28d9', kind: 'spin-again' as const, probability, showIn: 'always' as const,
+    });
+
+    it('persists valid specials and replaces the previous ones', async () => {
+      expect(await service.setSpecials('c1', [special('a', 5), special('b', 10)])).toEqual({ ok: true });
+      expect(await service.setSpecials('c1', [special('c', 1)])).toEqual({ ok: true });
+      const loaded = await store.loadCourse('c1');
+      expect(loaded.ok && loaded.value.specials.map((x) => x.id)).toEqual(['c']);
+    });
+
+    it('rejects probabilities that leave no room for students, without saving', async () => {
+      await service.setSpecials('c1', [special('keep', 5)]);
+      expect(await service.setSpecials('c1', [special('a', 60), special('b', 40)])).toEqual({ ok: false, error: 'sum-too-high' });
+      const loaded = await store.loadCourse('c1');
+      expect(loaded.ok && loaded.value.specials.map((x) => x.id)).toEqual(['keep']);
+    });
+
+    it('rejects an invalid probability and duplicate ids', async () => {
+      expect(await service.setSpecials('c1', [special('a', -1)])).toEqual({ ok: false, error: 'invalid-probability' });
+      expect(await service.setSpecials('c1', [special('a', 1), special('a', 2)])).toEqual({ ok: false, error: 'duplicate-id' });
+    });
+
+    it('reports an unknown course', async () => {
+      expect(await service.setSpecials('nope', [])).toEqual({ ok: false, error: 'course-unreadable' });
+    });
+  });
 });

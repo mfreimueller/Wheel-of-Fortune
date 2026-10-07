@@ -1,3 +1,5 @@
+import { validateSpecials } from '../core/draw';
+import type { Special } from '../core/types';
 import { applyStudentPatch, resetPickCounts, type StudentPatch } from '../core/studentPatch';
 import type { EditOutcome } from '../shared/types';
 import type { CourseStore } from './store/courseStore';
@@ -12,6 +14,17 @@ export class CourseEditService {
     const result = applyStudentPatch(loaded.value, studentId, patch);
     if (!result.ok) return result;
     await this.store.saveCourse(result.course);
+    return { ok: true };
+  }
+
+  /** Replaces all special segments of the course. */
+  async setSpecials(courseId: string, specials: Special[]): Promise<EditOutcome> {
+    const loaded = await this.store.loadCourse(courseId);
+    if (!loaded.ok) return { ok: false, error: 'course-unreadable' };
+    if (new Set(specials.map((s) => s.id)).size !== specials.length) return { ok: false, error: 'duplicate-id' };
+    const valid = validateSpecials(specials);
+    if (!valid.ok) return valid;
+    await this.store.saveCourse({ ...loaded.value, specials });
     return { ok: true };
   }
 

@@ -1,6 +1,7 @@
 import type { GradeSymbol } from '../core/assessments';
 import type { Result } from '../core/result';
 import type { StudentPatch } from '../core/studentPatch';
+import type { Special } from '../core/types';
 import type { CourseFile } from '../core/schemas';
 import type { CourseListing, EditOutcome, ExportOutcome, GradeOutcome, ImportOutcome, PickOutcome, ReadError, SummaryOutcome } from './types';
 
@@ -15,6 +16,8 @@ export interface WheelApi {
     load: (id: string) => Promise<Result<CourseFile, ReadError>>;
     updateStudent: (input: { courseId: string; studentId: string; patch: StudentPatch }) => Promise<EditOutcome>;
     resetPickCounts: (courseId: string) => Promise<EditOutcome>;
+    /** Replaces all special segments of the course. */
+    setSpecials: (input: { courseId: string; specials: Special[] }) => Promise<EditOutcome>;
   };
   roster: {
     /** `null` when the file dialog was cancelled. */
@@ -43,6 +46,7 @@ export const CHANNELS = {
   courseLoad: 'courses:load',
   studentUpdate: 'courses:updateStudent',
   countsReset: 'courses:resetPickCounts',
+  specialsSet: 'courses:setSpecials',
   rosterPick: 'roster:pick',
   rosterImport: 'roster:import',
   pickDraw: 'pick:draw',
