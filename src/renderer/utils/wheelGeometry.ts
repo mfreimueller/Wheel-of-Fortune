@@ -6,7 +6,9 @@ import type { Special, SpecialKind, Student } from '../../core/types';
 
 export const WHEEL_PALETTE = ['#ed1943', '#004a8d', '#d97706', '#059669', '#6d28d9', '#0891b2'] as const;
 
-const RADIUS = 100;
+/** The disc of the Figma design is 492 px wide; one SVG unit is one pixel. */
+export const WHEEL_RADIUS = 246;
+const RADIUS = WHEEL_RADIUS;
 const FULL_TURNS = 5;
 const MAX_LABEL_CHARS = 16;
 const JITTER_SHARE = 0.6;
@@ -97,8 +99,9 @@ export function computeSegments(items: readonly WheelItem[]): WheelSegment[] {
   });
 }
 
+/** Label size in px: 16 px as in the design, smaller when the wheel gets crowded. */
 export function wheelFontSize(count: number): number {
-  return count > 24 ? 6 : count > 16 ? 7.5 : count > 10 ? 9 : 10.5;
+  return count > 24 ? 10 : count > 16 ? 12 : count > 12 ? 14 : 16;
 }
 
 export interface SpinInput {

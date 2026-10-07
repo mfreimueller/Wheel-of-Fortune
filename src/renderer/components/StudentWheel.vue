@@ -1,9 +1,9 @@
 <template>
   <div class="wheel-wrap">
-    <svg viewBox="-112 -112 224 224" class="wheel" role="group" :aria-label="t('wheel.label')">
+    <svg viewBox="-250 -250 524 500" class="wheel" role="group" :aria-label="t('wheel.label')">
       <defs>
-        <pattern id="special-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <line x1="0" y1="0" x2="0" y2="6" stroke="#fff" stroke-opacity="0.35" stroke-width="2" />
+        <pattern id="special-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+          <line x1="0" y1="0" x2="0" y2="8" stroke="#fff" stroke-opacity="0.3" stroke-width="2.5" />
         </pattern>
       </defs>
       <g
@@ -11,13 +11,14 @@
         :style="{ transform: `rotate(${rotation}deg)`, transition: `transform ${transitionMs}ms cubic-bezier(0.12, 0.7, 0.1, 1)` }"
       >
         <g v-for="segment in segments" :key="segment.id" :data-segment="segment.id">
-          <path :d="segment.path" :fill="segment.color" stroke="#fff" stroke-width="1" />
+          <path :d="segment.path" :fill="segment.color" class="segment" />
           <path v-if="segment.special" :d="segment.path" fill="url(#special-hatch)" />
           <text
             :transform="`rotate(${segment.labelAngle}) translate(${labelX} 0)`"
             text-anchor="end"
             dominant-baseline="middle"
             :font-size="fontSize"
+            font-weight="500"
             :fill="segment.textColor"
           >
             {{ segment.label }}
@@ -27,7 +28,7 @@
       <!-- The whole wheel is the spin button; the pointer stays put. -->
       <circle
         class="hit"
-        r="100"
+        :r="WHEEL_RADIUS"
         role="button"
         data-testid="wheel"
         :tabindex="disabled ? -1 : 0"
@@ -37,7 +38,7 @@
         @keydown.enter.prevent="request"
         @keydown.space.prevent="request"
       />
-      <polygon points="98,0 112,-9 112,9" class="pointer" />
+      <polygon points="242,0 264,-13 264,13" class="pointer" />
     </svg>
   </div>
 </template>
@@ -45,14 +46,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { computeSegments, computeSpinRotation, wheelFontSize, type WheelItem } from '../utils/wheelGeometry';
+import { computeSegments, computeSpinRotation, WHEEL_RADIUS, wheelFontSize, type WheelItem } from '../utils/wheelGeometry';
 
 const props = defineProps<{ items: WheelItem[]; disabled?: boolean }>();
 const emit = defineEmits<{ spin: [] }>();
 const { t } = useI18n();
 
-const LABEL_INSET = 8;
-const labelX = 100 - LABEL_INSET;
+// Labels end 14 px inside the rim.
+const labelX = WHEEL_RADIUS - 14;
 
 const rotation = ref(0);
 const transitionMs = ref(0);
@@ -90,12 +91,17 @@ defineExpose({ spinTo });
 <style scoped>
 .wheel-wrap {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .wheel {
-  width: min(100%, 630px);
+  width: min(100%, 524px);
   height: auto;
+}
+
+.segment {
+  stroke: var(--color-surface);
+  stroke-width: 1.5;
 }
 
 .disc {
@@ -113,11 +119,11 @@ defineExpose({ spinTo });
 }
 
 .hit:focus-visible {
-  stroke: #111827;
-  stroke-width: 2;
+  stroke: var(--color-text);
+  stroke-width: 3;
 }
 
 .pointer {
-  fill: #111827;
+  fill: var(--color-text);
 }
 </style>

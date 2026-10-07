@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { Special, Student } from '../../src/core/types';
-import { computeSegments, computeSpinRotation, labelColor, layoutItems, WHEEL_PALETTE } from '../../src/renderer/utils/wheelGeometry';
+import {
+  computeSegments,
+  computeSpinRotation,
+  labelColor,
+  layoutItems,
+  WHEEL_PALETTE,
+  WHEEL_RADIUS,
+  wheelFontSize,
+} from '../../src/renderer/utils/wheelGeometry';
 
 const student = (id: string, lastName: string, color: string | null = null): Student => ({
   id,
@@ -52,7 +60,7 @@ describe('computeSegments', () => {
 
   it('renders a single item as a full disc', () => {
     const [only] = computeSegments(layoutItems([student('a', 'A')], []));
-    expect(only!.path).toContain('A 100 100');
+    expect(only!.path).toContain('A 246 246');
     expect(only!.path.match(/A /g)).toHaveLength(2);
   });
 
@@ -91,6 +99,19 @@ describe('computeSpinRotation', () => {
 
   it('ignores jitter for a single item', () => {
     expect(computeSpinRotation({ count: 1, index: 0, current: 0, jitter: 0.4 })).toBe(computeSpinRotation({ count: 1, index: 0, current: 0, jitter: 0 }));
+  });
+});
+
+describe('wheel dimensions (Figma design: a 492 px disc)', () => {
+  it('has a disc radius of 246 px', () => {
+    expect(WHEEL_RADIUS).toBe(246);
+  });
+
+  it('uses a 16 px label for up to 12 segments and shrinks for crowded wheels', () => {
+    expect([1, 12].map(wheelFontSize)).toEqual([16, 16]);
+    expect([13, 16].map(wheelFontSize)).toEqual([14, 14]);
+    expect([17, 24].map(wheelFontSize)).toEqual([12, 12]);
+    expect(wheelFontSize(25)).toBe(10);
   });
 });
 
