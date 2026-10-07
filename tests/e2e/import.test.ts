@@ -32,7 +32,7 @@ test('importing a Grader CSV creates a course; importing it again changes nothin
   await page.getByRole('button', { name: 'Schließen' }).click();
 
   await expect(page.getByTestId('course-title')).toHaveText('3EHIF · DBIx - Modellierung');
-  await expect(page.getByTestId('course-summary')).toHaveText('3 aktive Schüler');
+  await expect(page.locator('[data-student]')).toHaveCount(3);
   await expect(page.getByTestId('year-select')).toHaveValue('2026/27');
 
   await page.getByTestId('import-button').click();

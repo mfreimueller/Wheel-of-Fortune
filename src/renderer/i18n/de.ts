@@ -9,7 +9,20 @@ export default {
     noCourse: 'Noch kein Kurs vorhanden. Importiere eine CSV-Datei aus Grader.',
     noCourseInYear: 'In diesem Schuljahr gibt es keinen Kurs.',
   },
-  course: { summary: '{count} aktive Schüler' },
+  wheel: {
+    label: 'Schülerauswahl',
+    spin: 'Rad drehen',
+    fair: 'Fair-Modus',
+    hint: 'Auf das Rad klicken, um zu drehen. Fair-Modus: nur Schüler mit den wenigsten Aufrufen.',
+    noStudents: 'In diesem Kurs gibt es keine aktiven Schüler.',
+    errors: {
+      'no-eligible-students': 'Es gibt keine Schüler, die ausgewählt werden können.',
+      'unknown-student': 'Dieser Schüler ist nicht (mehr) im Kurs.',
+      'course-unreadable': 'Der Kurs konnte nicht gelesen werden.',
+    },
+  },
+  table: { name: 'Name', count: 'Aufrufe', pick: 'Aufrufen' },
+  result: { selected: '{name} wurde ausgewählt', count: 'Aufruf Nr. {n}' },
   problems: {
     title: 'Einige Dateien konnten nicht gelesen werden:',
   },

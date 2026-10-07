@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Special, Student } from '../../src/core/types';
-import { computeSegments, computeSpinRotation, layoutItems, WHEEL_PALETTE } from '../../src/renderer/utils/wheelGeometry';
+import { computeSegments, computeSpinRotation, labelColor, layoutItems, WHEEL_PALETTE } from '../../src/renderer/utils/wheelGeometry';
 
 const student = (id: string, lastName: string, color: string | null = null): Student => ({
   id,
@@ -91,5 +91,24 @@ describe('computeSpinRotation', () => {
 
   it('ignores jitter for a single item', () => {
     expect(computeSpinRotation({ count: 1, index: 0, current: 0, jitter: 0.4 })).toBe(computeSpinRotation({ count: 1, index: 0, current: 0, jitter: 0 }));
+  });
+});
+
+describe('labelColor', () => {
+  it('uses white on dark segments', () => {
+    expect(labelColor('#004a8d')).toBe('#ffffff');
+    expect(labelColor('#ed1943')).toBe('#ffffff');
+  });
+
+  it('uses dark text on light segments', () => {
+    expect(labelColor('#ffaabb')).toBe('#111827');
+    expect(labelColor('#ffff00')).toBe('#111827');
+  });
+});
+
+describe('segment label color', () => {
+  it('is derived from the final segment color', () => {
+    const [light, dark] = computeSegments(layoutItems([student('a', 'A', '#ffaabb'), student('b', 'B', '#004a8d')], []));
+    expect([light!.textColor, dark!.textColor]).toEqual(['#111827', '#ffffff']);
   });
 });

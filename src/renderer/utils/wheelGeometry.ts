@@ -26,7 +26,18 @@ export interface WheelSegment {
   color: string;
   labelAngle: number;
   label: string;
+  textColor: string;
   special: boolean;
+}
+
+/** Dark or white text, whichever reads better on the given `#rrggbb` background (WCAG relative luminance). */
+export function labelColor(background: string): string {
+  const channel = (offset: number): number => {
+    const value = parseInt(background.slice(offset, offset + 2), 16) / 255;
+    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  };
+  const luminance = 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5);
+  return luminance > 0.4 ? '#111827' : '#ffffff';
 }
 
 /** Students by last name, with the specials spread evenly between them. */
@@ -80,6 +91,7 @@ export function computeSegments(items: readonly WheelItem[]): WheelSegment[] {
       color,
       labelAngle: ((i + 0.5) * 360) / n,
       label: item.label.length > MAX_LABEL_CHARS ? `${item.label.slice(0, MAX_LABEL_CHARS - 1)}…` : item.label,
+      textColor: labelColor(color),
       special: item.special,
     };
   });

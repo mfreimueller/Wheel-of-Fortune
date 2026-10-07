@@ -41,6 +41,14 @@ export function useCourses() {
     await loadSelected();
   }
 
+  /** Re-reads the selected course without clearing it first, so the view keeps its state. */
+  async function reload(): Promise<void> {
+    if (!courseId.value) return;
+    const loaded = await window.wheel.courses.load(courseId.value);
+    if (loaded.ok) course.value = loaded.value;
+    else loadError.value = loaded.error;
+  }
+
   async function loadSelected(): Promise<void> {
     course.value = null;
     loadError.value = null;
@@ -66,5 +74,5 @@ export function useCourses() {
   year.value = saved.year;
   courseId.value = saved.courseId;
 
-  return { listing, years, year, coursesInYear, courseId, course, loadError, refresh };
+  return { listing, years, year, coursesInYear, courseId, course, loadError, refresh, reload };
 }

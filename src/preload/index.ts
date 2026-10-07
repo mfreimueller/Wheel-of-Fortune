@@ -11,6 +11,10 @@ const api: WheelApi = {
     pick: () => ipcRenderer.invoke(CHANNELS.rosterPick),
     import: (input) => ipcRenderer.invoke(CHANNELS.rosterImport, input),
   },
+  pick: {
+    draw: (input) => ipcRenderer.invoke(CHANNELS.pickDraw, input),
+    student: (input) => ipcRenderer.invoke(CHANNELS.pickStudent, input),
+  },
 };
 
 contextBridge.exposeInMainWorld('wheel', api);

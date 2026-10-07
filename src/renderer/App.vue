@@ -25,10 +25,7 @@
 
   <main>
     <p v-if="loadError" class="error" role="alert">{{ loadError.file }}: {{ loadError.message }}</p>
-    <template v-else-if="course">
-      <h1 data-testid="course-title">{{ course.className }} · {{ course.subject }}</h1>
-      <p data-testid="course-summary">{{ t('course.summary', { count: course.students.filter((s) => s.active).length }) }}</p>
-    </template>
+    <CourseView v-else-if="course" :key="course.id" :course="course" @changed="reload" />
     <p v-else-if="years.length === 0" data-testid="empty">{{ t('empty.noCourse') }}</p>
     <p v-else>{{ t('empty.noCourseInYear') }}</p>
   </main>
@@ -39,11 +36,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import CourseView from './components/CourseView.vue';
 import ImportDialog from './components/ImportDialog.vue';
 import { useCourses } from './composables/useCourses';
 
 const { t } = useI18n();
-const { listing, years, year, coursesInYear, courseId, course, loadError, refresh } = useCourses();
+const { listing, years, year, coursesInYear, courseId, course, loadError, refresh, reload } = useCourses();
 const importing = ref(false);
 
 onMounted(() => refresh());

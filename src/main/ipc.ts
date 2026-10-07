@@ -3,15 +3,18 @@ import { readFile, stat } from 'node:fs/promises';
 import { basename } from 'node:path';
 import { z } from 'zod';
 import { CHANNELS, type PickedFile } from '../shared/api';
+import type { PickService } from './pickService';
 import type { RosterImportService } from './rosterImport';
 import type { CourseStore } from './store/courseStore';
 
 const MAX_CSV_BYTES = 5 * 1024 * 1024;
 
 const courseId = z.string().regex(/^[\w-]+$/);
+const drawInput = z.object({ courseId, fair: z.boolean(), absentIds: z.array(z.string().max(100)).max(500) });
+const pickInput = z.object({ courseId, studentId: z.string().min(1).max(100) });
 const importInput = z.object({ text: z.string().max(MAX_CSV_BYTES), schoolYear: z.string().max(20).optional() });
 
-export function registerIpc(store: CourseStore, importer: RosterImportService): void {
+export function registerIpc(store: CourseStore, importer: RosterImportService, picker: PickService): void {
   ipcMain.handle(CHANNELS.coursesList, () => store.listCourses());
   ipcMain.handle(CHANNELS.courseLoad, (_event, id: unknown) => store.loadCourse(courseId.parse(id)));
 
@@ -27,4 +30,13 @@ export function registerIpc(store: CourseStore, importer: RosterImportService): 
   });
 
   ipcMain.handle(CHANNELS.rosterImport, (_event, input: unknown) => importer.importCsv(importInput.parse(input)));
+
+  ipcMain.handle(CHANNELS.pickDraw, (_event, input: unknown) => {
+    const { courseId: id, fair, absentIds } = drawInput.parse(input);
+    return picker.draw(id, { fair, absentIds });
+  });
+  ipcMain.handle(CHANNELS.pickStudent, (_event, input: unknown) => {
+    const { courseId: id, studentId } = pickInput.parse(input);
+    return picker.pickStudent(id, studentId);
+  });
 }
