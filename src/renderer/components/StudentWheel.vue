@@ -91,12 +91,14 @@ defineExpose({ spinTo });
 <style scoped>
 .wheel-wrap {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
+/* Fills the available width; the height cap keeps the whole wheel on screen. */
 .wheel {
-  width: min(100%, 524px);
+  width: 100%;
   height: auto;
+  max-height: calc(100vh - 160px);
 }
 
 .segment {

@@ -195,10 +195,11 @@ async function run(action: () => Promise<void>): Promise<void> {
   gap: 6px;
 }
 
-/* The wheel frame of the design is 524 px wide, the student table 560 px. */
+/* The student table keeps its natural width on the right; the wheel takes all the remaining space. */
 .layout {
+  align-self: stretch;
   display: grid;
-  grid-template-columns: minmax(0, 524px) max-content;
+  grid-template-columns: minmax(0, 1fr) max-content;
   gap: var(--space-6);
   align-items: start;
 }
