@@ -1,3 +1,4 @@
+import type { ExportWarning } from '../core/exportCsv';
 import type { DrawResult } from '../core/draw';
 import type { RosterError } from '../core/rosterCsv';
 import type { MergeReport } from '../core/rosterMerge';
@@ -51,3 +52,15 @@ export type PickOutcome =
 export type GradeOutcome =
   | { ok: true; entryId: string | null }
   | { ok: false; error: 'unknown-student' | 'course-unreadable' | 'assessments-unreadable' };
+
+export type SummaryOutcome = { ok: true; newCount: number; totalCount: number } | { ok: false; error: 'course-unreadable' };
+
+export type ExportOutcome =
+  | {
+      ok: true;
+      /** `null` when the save dialog was cancelled. */
+      filePath: string | null;
+      count: number;
+      warnings: ExportWarning[];
+    }
+  | { ok: false; error: 'course-unreadable' | 'nothing-to-export' };

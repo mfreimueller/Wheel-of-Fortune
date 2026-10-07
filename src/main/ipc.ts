@@ -1,8 +1,9 @@
-import { dialog, ipcMain } from 'electron';
-import { readFile, stat } from 'node:fs/promises';
-import { basename } from 'node:path';
+import { app, dialog, ipcMain } from 'electron';
+import { readFile, stat, writeFile } from 'node:fs/promises';
+import { basename, join } from 'node:path';
 import { z } from 'zod';
 import { CHANNELS, type PickedFile } from '../shared/api';
+import type { ExportService } from './exportService';
 import type { GradingService } from './gradingService';
 import type { PickService } from './pickService';
 import type { RosterImportService } from './rosterImport';
@@ -20,9 +21,18 @@ const gradeInput = z.object({
   symbol: z.enum(['PLUS', 'WELLE', 'MINUS']).nullable(),
   replaces: z.string().max(100).nullable().optional(),
 });
+const exportInput = z.object({ courseId, scope: z.enum(['new', 'all']) });
 const importInput = z.object({ text: z.string().max(MAX_CSV_BYTES), schoolYear: z.string().max(20).optional() });
 
-export function registerIpc(store: CourseStore, importer: RosterImportService, picker: PickService, grader: GradingService): void {
+export interface Services {
+  store: CourseStore;
+  importer: RosterImportService;
+  picker: PickService;
+  grader: GradingService;
+  exporter: ExportService;
+}
+
+export function registerIpc({ store, importer, picker, grader, exporter }: Services): void {
   ipcMain.handle(CHANNELS.coursesList, () => store.listCourses());
   ipcMain.handle(CHANNELS.courseLoad, (_event, id: unknown) => store.loadCourse(courseId.parse(id)));
 
@@ -42,6 +52,19 @@ export function registerIpc(store: CourseStore, importer: RosterImportService, p
   ipcMain.handle(CHANNELS.pickDraw, (_event, input: unknown) => {
     const { courseId: id, fair, absentIds } = drawInput.parse(input);
     return picker.draw(id, { fair, absentIds });
+  });
+  ipcMain.handle(CHANNELS.exportSummary, (_event, id: unknown) => exporter.summary(courseId.parse(id)));
+  ipcMain.handle(CHANNELS.exportRun, (_event, input: unknown) => {
+    const { courseId: id, scope } = exportInput.parse(input);
+    return exporter.run(id, scope, async (suggestedName, csv) => {
+      const { canceled, filePath } = await dialog.showSaveDialog({
+        defaultPath: join(app.getPath('documents'), suggestedName),
+        filters: [{ name: 'CSV', extensions: ['csv'] }],
+      });
+      if (canceled || !filePath) return null;
+      await writeFile(filePath, csv, 'utf-8');
+      return filePath;
+    });
   });
   ipcMain.handle(CHANNELS.gradeSet, (_event, input: unknown) => grader.set(gradeInput.parse(input)));
   ipcMain.handle(CHANNELS.pickStudent, (_event, input: unknown) => {

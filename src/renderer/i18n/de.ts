@@ -4,6 +4,23 @@ export default {
     schoolYear: 'Schuljahr',
     course: 'Kurs',
     importCsv: 'CSV importieren…',
+    exportCsv: 'Leistungen exportieren…',
+  },
+  export: {
+    title: 'Leistungen exportieren',
+    scopeNew: 'Nur neue Einträge ({n})',
+    scopeAll: 'Alle Einträge ({n})',
+    hint: 'Beim Import in Grader denselben Kurs wählen: {course}.',
+    confirm: 'Exportieren…',
+    done: '{n} Einträge exportiert.',
+    errors: {
+      'course-unreadable': 'Der Kurs konnte nicht gelesen werden.',
+      'nothing-to-export': 'Es gibt nichts zu exportieren.',
+    },
+    warning: {
+      sanitized: 'Sonderzeichen (; oder Zeilenumbruch) in „{detail}“ wurden durch Leerzeichen ersetzt.',
+      'unknown-student': 'Eintrag eines unbekannten Schülers übersprungen ({detail}).',
+    },
   },
   empty: {
     noCourse: 'Noch kein Kurs vorhanden. Importiere eine CSV-Datei aus Grader.',

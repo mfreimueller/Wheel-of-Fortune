@@ -1,11 +1,6 @@
-import { buildExport, markExported, type ExportScope, type ExportWarning } from '../core/exportCsv';
+import { buildExport, markExported, type ExportScope } from '../core/exportCsv';
+import type { ExportOutcome, SummaryOutcome } from '../shared/types';
 import type { CourseStore } from './store/courseStore';
-
-export type SummaryOutcome = { ok: true; newCount: number; totalCount: number } | { ok: false; error: 'course-unreadable' };
-
-export type ExportOutcome =
-  | { ok: true; /** `null` when the save dialog was cancelled. */ filePath: string | null; count: number; warnings: ExportWarning[] }
-  | { ok: false; error: 'course-unreadable' | 'nothing-to-export' };
 
 /** Saves the CSV and returns where it went, or `null` if the user cancelled. */
 export type SaveFile = (suggestedName: string, csv: string) => Promise<string | null>;

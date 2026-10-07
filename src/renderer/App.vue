@@ -13,6 +13,7 @@
       </select>
     </label>
     <span class="spacer" />
+    <button data-testid="export-button" :disabled="!course" @click="exporting = true">{{ t('header.exportCsv') }}</button>
     <button data-testid="import-button" @click="importing = true">{{ t('header.importCsv') }}</button>
   </header>
 
@@ -30,6 +31,12 @@
     <p v-else>{{ t('empty.noCourseInYear') }}</p>
   </main>
 
+  <ExportDialog
+    v-if="exporting && course"
+    :course-id="course.id"
+    :course-name="`${course.className} · ${course.subject}`"
+    @close="exporting = false"
+  />
   <ImportDialog v-if="importing" @close="importing = false" @imported="(id) => refresh({ courseId: id })" />
 </template>
 
@@ -37,12 +44,14 @@
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CourseView from './components/CourseView.vue';
+import ExportDialog from './components/ExportDialog.vue';
 import ImportDialog from './components/ImportDialog.vue';
 import { useCourses } from './composables/useCourses';
 
 const { t } = useI18n();
 const { listing, years, year, coursesInYear, courseId, course, loadError, refresh, reload } = useCourses();
 const importing = ref(false);
+const exporting = ref(false);
 
 onMounted(() => refresh());
 </script>

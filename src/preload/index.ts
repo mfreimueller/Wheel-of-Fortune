@@ -15,6 +15,10 @@ const api: WheelApi = {
     draw: (input) => ipcRenderer.invoke(CHANNELS.pickDraw, input),
     student: (input) => ipcRenderer.invoke(CHANNELS.pickStudent, input),
   },
+  export: {
+    summary: (courseId) => ipcRenderer.invoke(CHANNELS.exportSummary, courseId),
+    run: (input) => ipcRenderer.invoke(CHANNELS.exportRun, input),
+  },
   grade: {
     set: (input) => ipcRenderer.invoke(CHANNELS.gradeSet, input),
   },
