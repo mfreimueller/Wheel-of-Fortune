@@ -162,3 +162,41 @@ describe('draw', () => {
     expect(result.ok && result.spins.at(-1)).toEqual({ kind: 'student', studentId: 'a' });
   });
 });
+
+describe('draw: weights', () => {
+  /** Small deterministic PRNG so the simulation never flakes. */
+  function mulberry32(seed: number): () => number {
+    let a = seed;
+    return () => {
+      a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  it('picks a student with weight 3 about three times as often as one with weight 1 in free mode', () => {
+    const students = [student('light'), student('heavy', { weight: 3 })];
+    const random = mulberry32(42);
+    const tally = { light: 0, heavy: 0 };
+    for (let i = 0; i < 4000; i++) {
+      const result = draw({ students, specials: [], fair: false, absentIds: none, random });
+      const spin = result.ok ? result.spins[0] : undefined;
+      if (spin?.kind === 'student') tally[spin.studentId as 'light' | 'heavy'] += 1;
+    }
+    expect(tally.heavy / tally.light).toBeGreaterThan(2.6);
+    expect(tally.heavy / tally.light).toBeLessThan(3.4);
+  });
+
+  it('picks a student with weight 0.5 half as often as one with weight 1', () => {
+    const students = [student('normal'), student('rare', { weight: 0.5 })];
+    const random = mulberry32(7);
+    let rare = 0;
+    for (let i = 0; i < 3000; i++) {
+      const result = draw({ students, specials: [], fair: false, absentIds: none, random });
+      if (result.ok && result.spins[0]?.kind === 'student' && result.spins[0].studentId === 'rare') rare += 1;
+    }
+    expect(rare / 3000).toBeGreaterThan(0.29);
+    expect(rare / 3000).toBeLessThan(0.37);
+  });
+});
