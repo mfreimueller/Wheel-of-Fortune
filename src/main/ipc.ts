@@ -3,6 +3,7 @@ import { readFile, stat, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { z } from 'zod';
 import { CHANNELS, type PickedFile } from '../shared/api';
+import type { CourseEditService } from './courseEditService';
 import type { ExportService } from './exportService';
 import type { GradingService } from './gradingService';
 import type { PickService } from './pickService';
@@ -21,6 +22,18 @@ const gradeInput = z.object({
   symbol: z.enum(['PLUS', 'WELLE', 'MINUS']).nullable(),
   replaces: z.string().max(100).nullable().optional(),
 });
+const studentUpdateInput = z.object({
+  courseId,
+  studentId: z.string().min(1).max(100),
+  patch: z
+    .object({
+      color: z.string().max(20).nullable().optional(),
+      pickCount: z.number().int().min(0).max(100000).optional(),
+      weight: z.number().min(0).max(100).optional(),
+      active: z.boolean().optional(),
+    })
+    .strict(),
+});
 const exportInput = z.object({ courseId, scope: z.enum(['new', 'all']) });
 const importInput = z.object({ text: z.string().max(MAX_CSV_BYTES), schoolYear: z.string().max(20).optional() });
 
@@ -30,11 +43,18 @@ export interface Services {
   picker: PickService;
   grader: GradingService;
   exporter: ExportService;
+  editor: CourseEditService;
 }
 
-export function registerIpc({ store, importer, picker, grader, exporter }: Services): void {
+export function registerIpc({ store, importer, picker, grader, exporter, editor }: Services): void {
   ipcMain.handle(CHANNELS.coursesList, () => store.listCourses());
   ipcMain.handle(CHANNELS.courseLoad, (_event, id: unknown) => store.loadCourse(courseId.parse(id)));
+
+  ipcMain.handle(CHANNELS.studentUpdate, (_event, input: unknown) => {
+    const { courseId: id, studentId, patch } = studentUpdateInput.parse(input);
+    return editor.updateStudent(id, studentId, patch);
+  });
+  ipcMain.handle(CHANNELS.countsReset, (_event, id: unknown) => editor.resetPickCounts(courseId.parse(id)));
 
   ipcMain.handle(CHANNELS.rosterPick, async (): Promise<PickedFile> => {
     const { canceled, filePaths } = await dialog.showOpenDialog({

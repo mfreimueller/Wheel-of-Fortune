@@ -1,4 +1,5 @@
 import type { ExportWarning } from '../core/exportCsv';
+import type { PatchError } from '../core/studentPatch';
 import type { DrawResult } from '../core/draw';
 import type { RosterError } from '../core/rosterCsv';
 import type { MergeReport } from '../core/rosterMerge';
@@ -64,3 +65,5 @@ export type ExportOutcome =
       warnings: ExportWarning[];
     }
   | { ok: false; error: 'course-unreadable' | 'nothing-to-export' };
+
+export type EditOutcome = { ok: true } | { ok: false; error: PatchError | 'course-unreadable' };

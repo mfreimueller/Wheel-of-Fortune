@@ -18,8 +18,7 @@ async function launch(): Promise<Page> {
 }
 
 async function counts(page: Page): Promise<number[]> {
-  const texts = await page.getByTestId('count').allTextContents();
-  return texts.map(Number);
+  return page.locator('[data-student] input.count').evaluateAll((inputs) => inputs.map((i) => Number((i as HTMLInputElement).value)));
 }
 
 test.beforeEach(async () => {

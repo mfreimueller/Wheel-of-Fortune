@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell } from 'electron';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
+import { CourseEditService } from './courseEditService';
 import { ExportService } from './exportService';
 import { GradingService } from './gradingService';
 import { registerIpc } from './ipc';
@@ -57,6 +58,7 @@ if (!app.requestSingleInstanceLock()) {
       picker: new PickService(store),
       grader: new GradingService(store),
       exporter: new ExportService(store),
+      editor: new CourseEditService(store),
     });
     createWindow();
   });

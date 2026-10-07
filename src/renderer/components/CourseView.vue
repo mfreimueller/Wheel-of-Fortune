@@ -9,6 +9,7 @@
           <input v-model="fair" type="checkbox" data-testid="fair-toggle" :disabled="picking" />
           {{ t('wheel.fair') }}
         </label>
+        <button type="button" data-testid="reset-counts" :disabled="picking" @click="confirmingReset = true">{{ t('wheel.reset') }}</button>
         <span class="hint">{{ t('wheel.hint') }}</span>
       </div>
       <p v-if="error" class="error" role="alert">{{ error }}</p>
@@ -16,27 +17,14 @@
       <div class="layout">
         <StudentWheel ref="wheel" :items="items" :disabled="picking" @spin="spin" />
 
-        <table class="counts" data-testid="students">
-          <thead>
-            <tr>
-              <th>{{ t('table.name') }}</th>
-              <th>{{ t('table.count') }}</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="s in activeStudents" :key="s.id" :data-student="s.id">
-              <td>
-                <span class="dot" :style="{ background: s.color ?? '#9ca3af' }" />
-                {{ s.lastName }} {{ s.firstName }}
-              </td>
-              <td data-testid="count">{{ s.pickCount }}</td>
-              <td>
-                <button :disabled="picking" :data-testid="`pick-${s.id}`" @click="pickDirect(s.id)">{{ t('table.pick') }}</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <StudentTable
+          :students="course.students"
+          :absent-ids="absentIds"
+          :picking="picking"
+          @update="updateStudent"
+          @toggle-absent="toggleAbsent"
+          @pick="pickDirect"
+        />
       </div>
     </template>
 
@@ -49,6 +37,16 @@
       @close="result = null"
     />
     <SpecialDialog v-if="special" :special="special" @close="special = null" />
+
+    <div v-if="confirmingReset" class="overlay" @click.self="confirmingReset = false">
+      <div class="dialog" role="dialog" aria-modal="true" :aria-label="t('wheel.reset')">
+        <p>{{ t('wheel.resetConfirm') }}</p>
+        <div class="actions">
+          <button @click="confirmingReset = false">{{ t('import.cancel') }}</button>
+          <button class="primary" data-testid="reset-confirm" @click="resetCounts">{{ t('wheel.reset') }}</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -57,9 +55,11 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { activeSpecials, eligibleStudents, fairPool } from '../../core/draw';
 import type { CourseFile } from '../../core/schemas';
+import type { StudentPatch } from '../../core/studentPatch';
 import type { Special } from '../../core/types';
 import type { PickedStudent } from '../../shared/types';
 import { layoutItems } from '../utils/wheelGeometry';
+import StudentTable from './StudentTable.vue';
 import PickResultDialog from './PickResultDialog.vue';
 import SpecialDialog from './SpecialDialog.vue';
 import StudentWheel from './StudentWheel.vue';
@@ -78,22 +78,21 @@ const error = ref('');
 const result = ref<PickedStudent | null>(null);
 const special = ref<Special | null>(null);
 const wheel = ref<InstanceType<typeof StudentWheel> | null>(null);
+const confirmingReset = ref(false);
+// Session-only: who is absent today is not worth persisting.
+const absentIds = ref<ReadonlySet<string>>(new Set());
 
-const activeStudents = computed(() =>
-  props.course.students
-    .filter((s) => s.active)
-    .sort((a, b) => a.lastName.localeCompare(b.lastName, 'de') || a.firstName.localeCompare(b.firstName, 'de')),
-);
+const activeStudents = computed(() => props.course.students.filter((s) => s.active));
 
 const items = computed(() => {
-  const eligible = eligibleStudents(props.course.students, new Set());
+  const eligible = eligibleStudents(props.course.students, absentIds.value);
   const pool = fair.value ? fairPool(eligible) : eligible;
   return layoutItems(pool, activeSpecials(props.course.specials, fair.value));
 });
 
 async function spin(): Promise<void> {
   await run(async () => {
-    const outcome = await window.wheel.pick.draw({ courseId: props.course.id, fair: fair.value, absentIds: [] });
+    const outcome = await window.wheel.pick.draw({ courseId: props.course.id, fair: fair.value, absentIds: [...absentIds.value] });
     if (!outcome.ok) {
       error.value = t(`wheel.errors.${outcome.error}`);
       return;
@@ -119,6 +118,29 @@ async function pickDirect(studentId: string): Promise<void> {
     }
     emit('changed');
     result.value = outcome.picked;
+  });
+}
+
+async function updateStudent(studentId: string, patch: StudentPatch): Promise<void> {
+  await run(async () => {
+    const outcome = await window.wheel.courses.updateStudent({ courseId: props.course.id, studentId, patch });
+    if (!outcome.ok) error.value = t(`wheel.errors.${outcome.error}`);
+    emit('changed');
+  });
+}
+
+function toggleAbsent(studentId: string): void {
+  const next = new Set(absentIds.value);
+  if (!next.delete(studentId)) next.add(studentId);
+  absentIds.value = next;
+}
+
+async function resetCounts(): Promise<void> {
+  confirmingReset.value = false;
+  await run(async () => {
+    const outcome = await window.wheel.courses.resetPickCounts(props.course.id);
+    if (!outcome.ok) error.value = t(`wheel.errors.${outcome.error}`);
+    emit('changed');
   });
 }
 
@@ -148,29 +170,8 @@ async function run(action: () => Promise<void>): Promise<void> {
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 520px);
   gap: 24px;
   align-items: start;
-}
-
-.counts {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.counts th,
-.counts td {
-  padding: 4px 6px;
-  border-bottom: 1px solid var(--border);
-  text-align: left;
-}
-
-.dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  margin-right: 6px;
-  border-radius: 50%;
 }
 </style>

@@ -1,7 +1,6 @@
-import { applyStudentPatch, resetPickCounts, type PatchError, type StudentPatch } from '../core/studentPatch';
+import { applyStudentPatch, resetPickCounts, type StudentPatch } from '../core/studentPatch';
+import type { EditOutcome } from '../shared/types';
 import type { CourseStore } from './store/courseStore';
-
-export type EditOutcome = { ok: true } | { ok: false; error: PatchError | 'course-unreadable' };
 
 /** Edits that the teacher makes in the student panel. */
 export class CourseEditService {
