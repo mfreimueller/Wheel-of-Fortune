@@ -62,7 +62,7 @@ export default {
     },
     spin: {
       title: 'Rad drehen / Ziehen',
-      lever: 'Klicke auf den Hebel („{spin}“), um zu ziehen. Das Ergebnis steht sofort fest und wird gezählt, die Walzen zeigen es nur noch an.',
+      lever: 'Klicke auf das Rad („{spin}“), um zu drehen. Das Ergebnis steht sofort fest und wird gezählt, das Rad zeigt es nur noch an.',
       fair: '„{fair}“ (Standard): Es werden nur Schüler:innen gezogen, die am wenigsten oft aufgerufen wurden. So kommen alle einmal dran, bevor jemand ein zweites Mal gezogen wird.',
       free: 'Ohne Häkchen bei „{fair}“ (freier Modus) kann jede:r gezogen werden, auch mehrmals hintereinander. Nach dem Neuladen der Seite ist wieder der Fair-Modus eingestellt.',
       absent: 'Wer heute fehlt, bekommt in der Spalte „{absent}“ ein Häkchen und wird nicht gezogen. Diese Markierung gilt nur für die aktuelle Sitzung und ist nach dem Neuladen der Seite weg.',
@@ -105,12 +105,9 @@ export default {
   },
   wheel: {
     label: 'Schülerauswahl',
-    brand: 'GLÜCKSRAD',
-    spin: 'Hebel ziehen',
-    statusIdle: 'Hebel ziehen, um zu starten',
-    statusSpinning: 'Die Walzen drehen sich …',
+    spin: 'Rad drehen',
     fair: 'Fair-Modus',
-    hint: 'Auf den Hebel klicken, um zu starten. Fair-Modus: nur Schüler mit den wenigsten Aufrufen.',
+    hint: 'Auf das Rad klicken, um zu drehen. Fair-Modus: nur Schüler mit den wenigsten Aufrufen.',
     noStudents: 'In diesem Kurs gibt es keine aktiven Schüler.',
     specials: 'Spezialsegmente…',
     reset: 'Zähler zurücksetzen',

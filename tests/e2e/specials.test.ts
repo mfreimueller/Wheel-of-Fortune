@@ -25,10 +25,10 @@ test('specials are saved, validated, and only free-only ones disappear in fair m
     { label: 'Test!', kind: 'message', probability: 5, showIn: 'always' },
   ]);
 
-  // Fair mode (default): only the "always" special is on the machine (3 students + 1 special).
-  await expect(page.getByTestId('wheel-machine')).toHaveAttribute('data-item-count', '4');
+  // Fair mode (default): only the "always" special is on the wheel (3 students + 1 special).
+  await expect(page.locator('[data-segment]')).toHaveCount(4);
   await page.getByTestId('fair-toggle').uncheck();
-  await expect(page.getByTestId('wheel-machine')).toHaveAttribute('data-item-count', '5');
+  await expect(page.locator('[data-segment]')).toHaveCount(5);
 });
 
 test('landing on a message special shows its dialog and counts nobody', async ({ page }) => {
@@ -40,7 +40,7 @@ test('landing on a message special shows its dialog and counts nobody', async ({
   await page.getByTestId('special-kind-0').selectOption('message');
   await page.getByTestId('special-prob-0').fill('99.9');
   await page.getByTestId('specials-save').click();
-  await expect(page.getByTestId('wheel-machine')).toHaveAttribute('data-item-count', '4');
+  await expect(page.locator('[data-segment]')).toHaveCount(4);
 
   await page.getByTestId('wheel').click();
   await expect(page.getByTestId('special-label')).toHaveText('Blatt raus!');
