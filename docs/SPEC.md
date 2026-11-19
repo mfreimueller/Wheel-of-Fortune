@@ -1,3 +1,7 @@
+> **Obsolete in parts.** The app is now a static web app (no Electron, data in `localStorage` as `wof:db`, backup as JSON).
+> Everything about Grader interop, grading (`+` / `~` / `−`), assessments, CSV export of grades, the data folder, `.bak` and `.trash`
+> no longer applies. See README.md for the current behaviour.
+
 # Wheel of Fortune — Specification
 
 A small Electron desktop app: the student picker ("Schülerauswahl") extracted from Grader (`../grdr`) into its own

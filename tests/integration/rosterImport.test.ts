@@ -1,26 +1,19 @@
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { CourseStore } from '../../src/main/store/courseStore';
-import { RosterImportService } from '../../src/main/rosterImport';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { memoryStorage } from '../helpers/memoryStorage';
+import { LocalStore } from '../../src/services/localStore';
+import { RosterImportService } from '../../src/services/rosterImport';
 
 const fixture = (name: string) => readFileSync(new URL(`../fixtures/${name}`, import.meta.url), 'utf-8');
 
-let dir: string;
-let store: CourseStore;
+let store: LocalStore;
 let service: RosterImportService;
 let counter = 0;
 
 beforeEach(async () => {
-  dir = await mkdtemp(join(tmpdir(), 'wheel-import-'));
-  store = new CourseStore(dir);
+  store = new LocalStore(memoryStorage());
   counter = 0;
   service = new RosterImportService(store, (prefix) => `${prefix}_${++counter}`, () => new Date(2026, 9, 7));
-});
-afterEach(async () => {
-  await rm(dir, { recursive: true, force: true });
 });
 
 describe('RosterImportService', () => {

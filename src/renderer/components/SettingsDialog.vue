@@ -2,19 +2,23 @@
   <div class="overlay">
     <div class="dialog" role="dialog" aria-modal="true" :aria-label="t('settings.title')">
       <h2>{{ t('settings.title') }}</h2>
-      <p v-if="!info">{{ t('import.working') }}</p>
-      <template v-else>
-        <h3>{{ t('settings.dataDir') }}</h3>
-        <p class="path" data-testid="data-dir">{{ info.dataDir }}</p>
-        <p v-if="info.source === 'env'" class="hint" data-testid="data-dir-locked">{{ t('settings.locked') }}</p>
-        <p v-else class="hint">{{ t('settings.moveHint') }}</p>
+      <h3>{{ t('settings.backup') }}</h3>
+      <p class="hint">{{ t('settings.backupHint') }}</p>
+      <p class="hint" data-testid="last-backup">
+        {{ lastBackup ? t('settings.lastBackup', { date: formatted }) : t('settings.noBackup') }}
+      </p>
+      <div class="row">
+        <button type="button" data-testid="backup-export" @click="exportBackup">{{ t('settings.export') }}</button>
+        <button type="button" data-testid="backup-import" :disabled="confirming" @click="confirming = true">{{ t('settings.import') }}</button>
+      </div>
+      <div v-if="confirming" class="stack" role="alertdialog" data-testid="import-confirm-box">
+        <p>{{ t('settings.importConfirm') }}</p>
         <div class="row">
-          <button type="button" data-testid="reveal-data-dir" @click="reveal">{{ t('settings.reveal') }}</button>
-          <button type="button" data-testid="choose-data-dir" :disabled="info.source === 'env'" @click="choose">
-            {{ t('settings.change') }}
-          </button>
+          <button type="button" @click="confirming = false">{{ t('import.cancel') }}</button>
+          <button type="button" class="primary" data-testid="backup-import-confirm" @click="importBackup">{{ t('settings.importConfirmButton') }}</button>
         </div>
-      </template>
+      </div>
+      <p v-if="message" :class="isError ? 'error' : 'success'" role="status" data-testid="backup-message">{{ message }}</p>
       <div class="actions">
         <button class="primary" @click="emit('close')">{{ t('import.close') }}</button>
       </div>
@@ -23,38 +27,37 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { DataDirInfo } from '../../shared/types';
 
-const emit = defineEmits<{ close: [] }>();
+const emit = defineEmits<{ close: []; restored: [] }>();
 const { t } = useI18n();
-const info = ref<DataDirInfo | null>(null);
 
-onMounted(async () => {
-  info.value = await window.wheel.settings.get();
-});
+const lastBackup = ref(window.wheel.backup.lastBackupAt());
+const confirming = ref(false);
+const message = ref('');
+const isError = ref(false);
 
-async function choose(): Promise<void> {
-  // On success the app restarts, so there is nothing more to do here.
-  await window.wheel.settings.chooseDataDir();
+const formatted = computed(() => (lastBackup.value ? new Date(lastBackup.value).toLocaleString('de-AT') : ''));
+
+async function exportBackup(): Promise<void> {
+  const outcome = await window.wheel.backup.export();
+  lastBackup.value = window.wheel.backup.lastBackupAt();
+  isError.value = !outcome.ok;
+  message.value = outcome.ok ? t('settings.exported') : t('settings.errors.corrupt');
 }
 
-async function reveal(): Promise<void> {
-  await window.wheel.settings.revealDataDir();
+async function importBackup(): Promise<void> {
+  confirming.value = false;
+  const outcome = await window.wheel.backup.import();
+  if (!outcome) return;
+  isError.value = !outcome.ok;
+  message.value = outcome.ok ? t('settings.imported', { n: outcome.courseCount }) : t(`settings.errors.${outcome.error}`);
+  if (outcome.ok) emit('restored');
 }
 </script>
 
 <style scoped>
-.path {
-  padding: var(--space-2);
-  background: var(--color-surface-subtle);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  line-height: 18px;
-  word-break: break-all;
-}
-
 .row {
   display: flex;
   gap: 8px;

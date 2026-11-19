@@ -7,8 +7,9 @@
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "lib": ["ES2022", "DOM"],
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["electron.vite.config.ts", "src/main/**/*", "src/preload/**/*", "src/core/**/*", "src/shared/**/*", "src/renderer/i18n/de.ts", "tests/**/*", "playwright.config.ts", "vitest.config.ts"]
+  "include": ["vite.config.ts", "vitest.config.ts", "playwright.config.ts", "src/core/**/*", "src/services/**/*", "tests/**/*"]
 }

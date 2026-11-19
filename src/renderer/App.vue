@@ -1,4 +1,8 @@
 <template>
+  <section v-if="appError" class="problems" role="alert" data-testid="app-error">
+    <p>{{ isStoreWriteError(appError) ? t('error.storeWrite') : t('error.unexpected', { detail: String((appError as Error)?.message ?? appError) }) }}</p>
+    <button type="button" @click="appError = null">{{ t('error.dismiss') }}</button>
+  </section>
   <header class="bar">
     <label>
       {{ t('header.schoolYear') }}
@@ -28,9 +32,9 @@
       {{ t('header.showArchived') }}
     </label>
     <span class="spacer" />
-    <button data-testid="export-button" :disabled="!course" @click="exporting = true">{{ t('header.exportCsv') }}</button>
     <button data-testid="import-button" @click="importing = true">{{ t('header.importCsv') }}</button>
     <button data-testid="settings-button" @click="settings = true">{{ t('header.settings') }}</button>
+    <button data-testid="help-button" @click="help = true">{{ t('header.help') }}</button>
   </header>
 
   <section v-if="listing.problems.length" class="problems" role="alert">
@@ -38,6 +42,10 @@
     <ul>
       <li v-for="p in listing.problems" :key="p.file">{{ p.file }}: {{ p.message }}</li>
     </ul>
+    <div v-if="storeCorrupt" class="row">
+      <button type="button" data-testid="download-raw" @click="downloadRaw">{{ t('problems.downloadRaw') }}</button>
+      <button type="button" data-testid="reset-store" @click="resetStore">{{ t('problems.reset') }}</button>
+    </div>
   </section>
 
   <main>
@@ -57,32 +65,40 @@
     </div>
   </div>
 
-  <ExportDialog
-    v-if="exporting && course"
-    :course-id="course.id"
-    :course-name="`${course.className} · ${course.subject}`"
-    @close="exporting = false"
-  />
   <ImportDialog v-if="importing" @close="importing = false" @imported="(id) => refresh({ courseId: id })" />
-  <SettingsDialog v-if="settings" @close="settings = false" />
+  <HelpDialog v-if="help" @close="help = false" />
+  <SettingsDialog v-if="settings" @close="settings = false" @restored="refresh()" />
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CourseView from './components/CourseView.vue';
-import ExportDialog from './components/ExportDialog.vue';
+import HelpDialog from './components/HelpDialog.vue';
 import ImportDialog from './components/ImportDialog.vue';
 import SettingsDialog from './components/SettingsDialog.vue';
+import { appError, isStoreWriteError } from './composables/useAppError';
 import { useCourses } from './composables/useCourses';
 
 const { t } = useI18n();
 const { listing, years, year, coursesInYear, courseId, course, loadError, showArchived, refresh, reload } = useCourses();
 const importing = ref(false);
-const exporting = ref(false);
 const settings = ref(false);
+const help = ref(false);
 const deleting = ref(false);
 const menu = ref<HTMLDetailsElement | null>(null);
+
+const storeCorrupt = computed(() => listing.value.problems.some((p) => p.file === 'wof:db'));
+
+async function downloadRaw(): Promise<void> {
+  await window.wheel.backup.downloadRaw();
+}
+
+async function resetStore(): Promise<void> {
+  if (!window.confirm(t('problems.resetConfirm'))) return;
+  await window.wheel.backup.reset();
+  await refresh();
+}
 
 const courseSummary = computed(() => listing.value.courses.find((c) => c.id === courseId.value));
 
@@ -110,6 +126,11 @@ onMounted(() => refresh());
 </script>
 
 <style scoped>
+.row {
+  display: flex;
+  gap: 8px;
+}
+
 .menu {
   position: relative;
 }

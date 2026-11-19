@@ -1,41 +1,62 @@
-# File formats (the contract with Grader)
+# Data formats
 
-The two apps share no code and no storage. These formats are the whole interface. Each has a fixture or contract
-test in this repository (`tests/fixtures/`, `tests/unit/graderContract.test.ts`); change both sides together.
+Everything the app reads or writes. Each format has a fixture or test in this repository (`tests/fixtures/`, `tests/unit/`, `tests/integration/`).
 
-## Roster: Grader → Wheel (import)
+## Roster CSV (import)
 
-Written by Grader (Kurs → Teilnehmer → *CSV exportieren*), read by `src/core/rosterCsv.ts`.
+Read by `src/core/rosterCsv.ts`.
 
 ```
 Klasse,Fach,Schuljahr,Id,Vorname,Nachname,Color,Kategorien
 3EHIF,"DBIx - Modellierung",2026/27,g1,Anna,Bob,#ffaabb,Mitarbeit|Wiederholung
 ```
 
-- Header-based, any column order, `,` or `;`, quoted fields, UTF-8 (BOM tolerated).
+- Header-based, any column order, `,` or `;` as separator, quoted fields, UTF-8 (BOM tolerated). Maximum 5 MB.
 - Required: `Klasse`, `Fach`, `Vorname`, `Nachname`. Optional: `Schuljahr`, `Id`, `Color`, `Kategorien`.
-- One course per file. Without `Schuljahr` the import asks for it.
-- `Color`: `#rgb` or `#rrggbb`. `Kategorien`: tertiary category titles, `|`-separated, identical on every row.
-- Course key = (school year, class, subject). Students match by `Id`, otherwise by normalized name.
-- Re-importing never changes pick counts, weights, specials or grades; known students only get a new color.
+- One course per file. Without `Schuljahr` the import dialog asks for it.
+- `Color`: `#rgb` or `#rrggbb` (invalid values are ignored with a warning). `Kategorien` is read but no longer used.
+- Course key = (school year, class, subject). Students match by `Id` (stored as `graderId`), otherwise by normalized name.
+- Re-importing never changes pick counts, weights or specials; known students only get a new color. Students missing from the file become inactive.
 
-## Assessments: Wheel → Grader (export)
+## Browser storage
 
-Written by `src/core/exportCsv.ts`, read by Grader's grade import (`GradeImportService`), where the user selects the course.
+| Key | Content |
+| --- | --- |
+| `wof:db` | The whole database (JSON, below). |
+| `wof:lastBackupAt` | ISO timestamp of the last exported backup. |
+| `wheel.selection` | `{ "year": "2026/27", "courseId": "..." }`, the remembered selection (convenience only). |
 
+### `wof:db` and backup files
+
+A backup file is exactly the content of `wof:db`, pretty-printed (`wheel-backup-YYYY-MM-DD.json`).
+
+```json
+{
+  "schemaVersion": 1,
+  "courses": [
+    {
+      "schemaVersion": 1,
+      "id": "c_<uuid>",
+      "schoolYear": "2026/27",
+      "className": "3EHIF",
+      "subject": "DBIx - Modellierung",
+      "archived": false,
+      "categories": [],
+      "defaultCategory": "Mitarbeit",
+      "students": [
+        { "id": "s_<uuid>", "graderId": null, "firstName": "Anna", "lastName": "Bob",
+          "color": "#ffaabb", "pickCount": 0, "weight": 1, "active": true }
+      ],
+      "specials": [
+        { "id": "...", "label": "Nochmal drehen", "color": "#6d28d9", "kind": "spin-again",
+          "probability": 10, "showIn": "always" }
+      ]
+    }
+  ]
+}
 ```
-Nachname;Vorname;Kategorie;Name;Datum;Max;Note
-Bob;Anna;Mitarbeit;Aufruf (Mitarbeit);07.10.2026;;+
-```
 
-- `;`-separated, no quoting (Grader does not parse it), UTF-8, `\n`.
-- `Kategorie` must equal a category title of the target course in Grader.
-- `Name` is `Aufruf (<Kategorie>)`, with ` 2`, ` 3`, … for a student's repeated picks on the same day and category.
-  Grader reuses an assessment by (date, title) and ignores the category, so this keeps categories apart and picks distinct.
-- `Datum` `dd.mm.yyyy`, `Max` empty (tertiary), `Note` `+` / `~` / `-`.
-- Only graded picks are exported: an empty `Note` would be imported as `~`.
-- Importing the same rows again updates the existing performances instead of duplicating them.
-
-## Data files
-
-See `docs/SPEC.md` §3. Both files carry `schemaVersion`; files from a newer version are refused, never overwritten.
+- `kind` is `spin-again` or `message` (with optional `message`); `showIn` is `always` or `free-only`. `probability` is in percent.
+- Schemas: `src/core/schemas.ts`. Missing optional fields get defaults on read.
+- Data with a newer `schemaVersion` is refused (restore) or reported as unreadable (stored data), never overwritten.
+- Restoring a backup replaces the whole database after a confirmation.

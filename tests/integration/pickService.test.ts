@@ -1,10 +1,8 @@
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { CourseFile } from '../../src/core/schemas';
-import { PickService } from '../../src/main/pickService';
-import { CourseStore } from '../../src/main/store/courseStore';
+import { PickService } from '../../src/services/pickService';
+import { memoryStorage } from '../helpers/memoryStorage';
+import { LocalStore } from '../../src/services/localStore';
 
 function course(overrides: Partial<CourseFile> = {}): CourseFile {
   const student = (id: string, pickCount = 0, active = true) => ({
@@ -24,15 +22,10 @@ const sequence = (...values: number[]) => {
   return () => values[i++] ?? 0;
 };
 
-let dir: string;
-let store: CourseStore;
+let store: LocalStore;
 beforeEach(async () => {
-  dir = await mkdtemp(join(tmpdir(), 'wheel-pick-'));
-  store = new CourseStore(dir);
+  store = new LocalStore(memoryStorage());
   await store.saveCourse(course());
-});
-afterEach(async () => {
-  await rm(dir, { recursive: true, force: true });
 });
 
 const counts = async () => {

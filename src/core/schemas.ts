@@ -39,29 +39,11 @@ export const courseFileSchema = z.object({
   specials: z.array(specialSchema).default([]),
 });
 
-export const assessmentEntrySchema = z.object({
-  id: z.string().min(1),
-  studentId: z.string().min(1),
-  category: z.string().min(1),
-  symbol: z.enum(['PLUS', 'WELLE', 'MINUS']),
-  gradedAt: z.string(),
-  exportedAt: z.string().nullable().default(null),
-});
-
-export const assessmentsFileSchema = z.object({
+/** The whole persisted database: one document holding every course. */
+export const dbSchema = z.object({
   schemaVersion: z.literal(CURRENT_SCHEMA_VERSION),
-  courseId: z.string().min(1),
-  days: z
-    .array(
-      z.object({
-        /** ISO date, e.g. "2026-10-07". */
-        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-        entries: z.array(assessmentEntrySchema),
-      }),
-    )
-    .default([]),
+  courses: z.array(courseFileSchema),
 });
 
 export type CourseFile = z.infer<typeof courseFileSchema>;
-export type AssessmentsFile = z.infer<typeof assessmentsFileSchema>;
-export type AssessmentEntry = z.infer<typeof assessmentEntrySchema>;
+export type Db = z.infer<typeof dbSchema>;

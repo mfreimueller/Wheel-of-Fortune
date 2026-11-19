@@ -1,39 +1,16 @@
-import { _electron as electron, expect, test, type ElectronApplication, type Page } from '@playwright/test';
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-
-const fixture = resolve('tests/fixtures/grader-roster.csv');
-let dataDir: string;
-let app: ElectronApplication;
-
-async function launch(): Promise<Page> {
-  app = await electron.launch({ args: ['.', `--user-data-dir=${dataDir}.user`], env: { ...process.env, WHEEL_DATA_DIR: dataDir } });
-  await app.evaluate(({ dialog }, file) => {
-    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [file] });
-  }, fixture);
-  const page = await app.firstWindow();
-  await page.emulateMedia({ reducedMotion: 'reduce' }); // the 6 s spin resolves immediately
-  return page;
-}
+import { expect, test, type Page } from '@playwright/test';
+import { importFixture, open } from './helpers';
 
 async function counts(page: Page): Promise<number[]> {
   return page.locator('[data-student] input.count').evaluateAll((inputs) => inputs.map((i) => Number((i as HTMLInputElement).value)));
 }
 
-test.beforeEach(async () => {
-  dataDir = await mkdtemp(join(tmpdir(), 'wheel-e2e-'));
-});
-test.afterEach(async () => {
-  await app.close();
-  await rm(dataDir, { recursive: true, force: true });
-  await rm(`${dataDir}.user`, { recursive: true, force: true });
+test.beforeEach(async ({ page }) => {
+  await open(page);
 });
 
-test('fair mode picks every student once before anybody is picked twice; counts survive a restart', async () => {
-  let page = await launch();
-  await page.getByTestId('import-button').click();
-  await page.getByRole('button', { name: 'Schließen' }).click();
+test('fair mode picks every student once before anybody is picked twice; counts survive a reload', async ({ page }) => {
+  await importFixture(page);
   await expect(page.getByTestId('students')).toBeVisible();
   expect(await counts(page)).toEqual([0, 0, 0]);
 
@@ -49,16 +26,13 @@ test('fair mode picks every student once before anybody is picked twice; counts 
   await expect(page.getByTestId('result-count')).toHaveText('Aufruf Nr. 2');
   await page.getByTestId('result-close').click();
 
-  await app.close();
-  page = await launch();
+  await page.reload();
   await expect(page.getByTestId('students')).toBeVisible();
   expect((await counts(page)).reduce((a, b) => a + b, 0)).toBe(4);
 });
 
-test('a direct pick counts without spinning, and free mode can pick the same student again', async () => {
-  const page = await launch();
-  await page.getByTestId('import-button').click();
-  await page.getByRole('button', { name: 'Schließen' }).click();
+test('a direct pick counts without spinning, and free mode can pick the same student again', async ({ page }) => {
+  await importFixture(page);
 
   const first = page.locator('[data-student]').first();
   const id = await first.getAttribute('data-student');

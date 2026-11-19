@@ -1,4 +1,3 @@
-import type { ExportWarning } from '../core/exportCsv';
 import type { PatchError } from '../core/studentPatch';
 import type { DrawResult } from '../core/draw';
 import type { RosterError } from '../core/rosterCsv';
@@ -8,8 +7,6 @@ export interface ReadError {
   kind: 'missing' | 'invalid' | 'newer-schema' | 'unreadable';
   file: string;
   message: string;
-  /** Only for `invalid`: a valid `.bak` exists and could be restored. */
-  backupAvailable: boolean;
 }
 
 export interface CourseSummary {
@@ -50,30 +47,12 @@ export type PickOutcome =
     }
   | { ok: false; error: 'no-eligible-students' | 'unknown-student' | 'course-unreadable' };
 
-export type GradeOutcome =
-  | { ok: true; entryId: string | null }
-  | { ok: false; error: 'unknown-student' | 'course-unreadable' | 'assessments-unreadable' };
-
-export type SummaryOutcome = { ok: true; newCount: number; totalCount: number } | { ok: false; error: 'course-unreadable' };
-
-export type ExportOutcome =
-  | {
-      ok: true;
-      /** `null` when the save dialog was cancelled. */
-      filePath: string | null;
-      count: number;
-      warnings: ExportWarning[];
-    }
-  | { ok: false; error: 'course-unreadable' | 'nothing-to-export' };
-
 export type EditOutcome =
   | { ok: true }
   | { ok: false; error: PatchError | SpecialsError | 'course-unreadable' };
 
 export type SpecialsError = 'invalid-probability' | 'sum-too-high' | 'duplicate-id';
 
-export interface DataDirInfo {
-  dataDir: string;
-  /** `env` (WHEEL_DATA_DIR) cannot be changed from the settings dialog. */
-  source: 'env' | 'config' | 'default';
-}
+export type RestoreOutcome = { ok: true; courseCount: number } | { ok: false; error: 'invalid-file' | 'newer-schema' | 'too-large' };
+
+export type BackupExportOutcome = { ok: true } | { ok: false; error: 'corrupt' };

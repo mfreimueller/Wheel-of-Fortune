@@ -63,7 +63,7 @@
     </table>
 
     <details v-if="inactive.length" class="inactive" data-testid="inactive">
-      <summary>{{ t('table.inactive', { n: inactive.length }) }}</summary>
+      <summary>{{ t('table.inactive', { title: t('table.inactiveTitle'), n: inactive.length }) }}</summary>
       <p class="hint">{{ t('table.inactiveHint') }}</p>
       <ul>
         <li v-for="s in inactive" :key="s.id">

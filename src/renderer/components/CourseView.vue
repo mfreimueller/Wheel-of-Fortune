@@ -33,9 +33,6 @@
       v-if="result"
       :student="result"
       :color="resultColor"
-      :course-id="course.id"
-      :categories="course.categories"
-      :default-category="course.defaultCategory"
       @close="result = null"
     />
     <SpecialsEditor

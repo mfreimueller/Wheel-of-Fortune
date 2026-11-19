@@ -2,11 +2,11 @@ import { parseRosterCsv } from '../core/rosterCsv';
 import { mergeRoster } from '../core/rosterMerge';
 import { currentSchoolYear, normalizeSchoolYear } from '../core/schoolYear';
 import type { ImportOutcome } from '../shared/types';
-import type { CourseStore } from './store/courseStore';
+import type { CourseRepo } from './courseRepo';
 
 export class RosterImportService {
   constructor(
-    private readonly store: CourseStore,
+    private readonly repo: CourseRepo,
     private readonly newId: (prefix: string) => string,
     private readonly now: () => Date = () => new Date(),
   ) {}
@@ -19,18 +19,18 @@ export class RosterImportService {
     const schoolYear = parsed.value.schoolYear ?? (input.schoolYear ? normalizeSchoolYear(input.schoolYear) : null);
     if (!schoolYear) return { status: 'needs-school-year', suggested: currentSchoolYear(this.now()) };
 
-    const { courses } = await this.store.listCourses();
+    const { courses } = await this.repo.listCourses();
     const match = courses.find((c) => c.schoolYear === schoolYear && c.className === parsed.value.className && c.subject === parsed.value.subject);
 
     let existing = null;
     if (match) {
-      const loaded = await this.store.loadCourse(match.id);
+      const loaded = await this.repo.loadCourse(match.id);
       if (!loaded.ok) return { status: 'error', error: { code: 'unreadable-course', detail: loaded.error.message } };
       existing = loaded.value;
     }
 
     const { course, report } = mergeRoster(existing, { ...parsed.value, schoolYear }, this.newId);
-    await this.store.saveCourse(course);
+    await this.repo.saveCourse(course);
     return { status: 'imported', courseId: course.id, report };
   }
 }

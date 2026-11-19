@@ -1,7 +1,7 @@
 import { draw } from '../core/draw';
 import type { CourseFile } from '../core/schemas';
 import type { PickedStudent, PickOutcome } from '../shared/types';
-import type { CourseStore } from './store/courseStore';
+import type { CourseRepo } from './courseRepo';
 
 export interface DrawOptions {
   fair: boolean;
@@ -12,12 +12,12 @@ export interface DrawOptions {
 /** Draws students, counts the pick and persists it immediately (before the wheel has finished spinning). */
 export class PickService {
   constructor(
-    private readonly store: CourseStore,
+    private readonly repo: CourseRepo,
     private readonly random: () => number = Math.random,
   ) {}
 
   async draw(courseId: string, options: DrawOptions): Promise<PickOutcome> {
-    const loaded = await this.store.loadCourse(courseId);
+    const loaded = await this.repo.loadCourse(courseId);
     if (!loaded.ok) return { ok: false, error: 'course-unreadable' };
     const course = loaded.value;
 
@@ -37,7 +37,7 @@ export class PickService {
 
   /** Direct pick without a spin ("Aufrufen"). */
   async pickStudent(courseId: string, studentId: string): Promise<PickOutcome> {
-    const loaded = await this.store.loadCourse(courseId);
+    const loaded = await this.repo.loadCourse(courseId);
     if (!loaded.ok) return { ok: false, error: 'course-unreadable' };
     if (!loaded.value.students.some((s) => s.id === studentId && s.active)) return { ok: false, error: 'unknown-student' };
     return { ok: true, spins: [{ kind: 'student', studentId }], picked: await this.count(loaded.value, studentId) };
@@ -46,7 +46,7 @@ export class PickService {
   private async count(course: CourseFile, studentId: string): Promise<PickedStudent> {
     const student = course.students.find((s) => s.id === studentId)!;
     student.pickCount += 1;
-    await this.store.saveCourse(course);
+    await this.repo.saveCourse(course);
     return {
       studentId: student.id,
       firstName: student.firstName,

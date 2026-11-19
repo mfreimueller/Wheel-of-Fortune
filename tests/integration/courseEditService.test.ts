@@ -1,10 +1,8 @@
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { CourseFile } from '../../src/core/schemas';
-import { CourseEditService } from '../../src/main/courseEditService';
-import { CourseStore } from '../../src/main/store/courseStore';
+import { CourseEditService } from '../../src/services/courseEditService';
+import { memoryStorage } from '../helpers/memoryStorage';
+import { LocalStore } from '../../src/services/localStore';
 
 const course: CourseFile = {
   schemaVersion: 1, id: 'c1', schoolYear: '2026/27', className: '3A', subject: 'Info', archived: false,
@@ -12,17 +10,12 @@ const course: CourseFile = {
   students: [{ id: 's1', graderId: null, firstName: 'Anna', lastName: 'Bob', color: null, pickCount: 3, weight: 1, active: true }],
 };
 
-let dir: string;
-let store: CourseStore;
+let store: LocalStore;
 let service: CourseEditService;
 beforeEach(async () => {
-  dir = await mkdtemp(join(tmpdir(), 'wheel-edit-'));
-  store = new CourseStore(dir);
+  store = new LocalStore(memoryStorage());
   await store.saveCourse(course);
   service = new CourseEditService(store);
-});
-afterEach(async () => {
-  await rm(dir, { recursive: true, force: true });
 });
 
 describe('CourseEditService', () => {
@@ -88,7 +81,7 @@ describe('CourseEditService', () => {
       expect(restored.ok && restored.value.archived).toBe(false);
     });
 
-    it('moves a deleted course to the trash', async () => {
+    it('removes a deleted course', async () => {
       expect(await service.deleteCourse('c1')).toEqual({ ok: true });
       expect((await store.listCourses()).courses).toEqual([]);
     });

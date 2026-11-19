@@ -1,32 +1,16 @@
-import { _electron as electron, expect, test, type ElectronApplication } from '@playwright/test';
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { expect, test } from '@playwright/test';
+import { fixturePath, open } from './helpers';
 
-const fixture = resolve('tests/fixtures/grader-roster.csv');
-let dataDir: string;
-let app: ElectronApplication;
-
-test.beforeEach(async () => {
-  dataDir = await mkdtemp(join(tmpdir(), 'wheel-e2e-'));
-  app = await electron.launch({ args: ['.', `--user-data-dir=${dataDir}.user`], env: { ...process.env, WHEEL_DATA_DIR: dataDir } });
-  // Native file dialogs cannot be driven by Playwright; answer them from the main process.
-  await app.evaluate(({ dialog }, file) => {
-    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [file] });
-  }, fixture);
+test.beforeEach(async ({ page }) => {
+  await open(page);
 });
 
-test.afterEach(async () => {
-  await app.close();
-  await rm(dataDir, { recursive: true, force: true });
-  await rm(`${dataDir}.user`, { recursive: true, force: true });
-});
-
-test('importing a Grader CSV creates a course; importing it again changes nothing', async () => {
-  const page = await app.firstWindow();
+test('importing a roster CSV creates a course; importing it again changes nothing', async ({ page }) => {
   await expect(page.getByTestId('empty')).toBeVisible();
 
+  const chooser = page.waitForEvent('filechooser');
   await page.getByTestId('import-button').click();
+  await (await chooser).setFiles(fixturePath('grader-roster.csv'));
   const report = page.getByTestId('import-report');
   await expect(report).toContainText('Neuer Kurs angelegt.');
   await expect(report).toContainText('Neu hinzugefügt: 3');
@@ -36,19 +20,18 @@ test('importing a Grader CSV creates a course; importing it again changes nothin
   await expect(page.locator('[data-student]')).toHaveCount(3);
   await expect(page.getByTestId('year-select')).toHaveValue('2026/27');
 
+  const again = page.waitForEvent('filechooser');
   await page.getByTestId('import-button').click();
+  await (await again).setFiles(fixturePath('grader-roster.csv'));
   await expect(page.getByTestId('import-report')).toContainText('Bestehender Kurs aktualisiert.');
   await expect(page.getByTestId('import-report')).toContainText('Neu hinzugefügt: 0');
   await expect(page.getByTestId('import-report')).toContainText('Aktualisiert: 0');
 });
 
-test('a CSV without school year asks for it', async () => {
-  await app.evaluate(({ dialog }, file) => {
-    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [file] });
-  }, resolve('tests/fixtures/grader-roster-legacy.csv'));
-  const page = await app.firstWindow();
-
+test('a CSV without school year asks for it', async ({ page }) => {
+  const chooser = page.waitForEvent('filechooser');
   await page.getByTestId('import-button').click();
+  await (await chooser).setFiles(fixturePath('grader-roster-legacy.csv'));
   await page.getByTestId('school-year-input').fill('2025/26');
   await page.getByTestId('school-year-confirm').click();
   await expect(page.getByTestId('import-report')).toContainText('Neuer Kurs angelegt.');
